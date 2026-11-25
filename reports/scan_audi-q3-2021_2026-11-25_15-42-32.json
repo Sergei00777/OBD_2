@@ -1,0 +1,38 @@
+{
+  "time": "2026-11-25T15:42:32.440166",
+  "vin": "LFV2B2F30M7743957",
+  "vehicle": {
+    "make": "Audi",
+    "model": "Q3",
+    "year": 2021,
+    "vin": "LFV2B2F30M7743957",
+    "body": "",
+    "plate": "",
+    "manufacturer": "FAW-Volkswagen (Китай)",
+    "engine": "",
+    "fuel": "бензин",
+    "voltage": "12",
+    "protocol": "auto",
+    "notes": "",
+    "id": "audi-q3-2021"
+  },
+  "protocol": "ISO 15765-4 CAN 11 бит 500 кбит/с",
+  "demo": false,
+  "mode": "obd",
+  "codes": [
+    {
+      "code": "U3501",
+      "type": "Сохранённая",
+      "ecu": "Двигатель (ECM)",
+      "description": "Общий код SAE, система: Сеть связи между блоками (CAN). Нет в локальной базе — пришлите код, добавлю расшифровку.",
+      "system": "Сеть связи между блоками (CAN)",
+      "severity": "medium",
+      "hint": ""
+    }
+  ],
+  "mil": false,
+  "mil_count": 2,
+  "lamps": {
+    "Check Engine (MIL)": false
+  }
+}

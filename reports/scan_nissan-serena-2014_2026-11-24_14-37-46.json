@@ -1,0 +1,28 @@
+{
+  "time": "2026-11-24T14:37:46.311650",
+  "vin": null,
+  "vehicle": {
+    "id": "nissan-serena-2014",
+    "make": "Nissan",
+    "model": "Serena (C26)",
+    "year": 2014,
+    "vin": "",
+    "body": "C26-080743",
+    "plate": "Н123ХЕ38",
+    "manufacturer": "Nissan (Япония, внутренний рынок)",
+    "engine": "2.0 бензин, 147 л.с. (108,1 кВт) — вероятно MR20DD",
+    "fuel": "бензин",
+    "voltage": "12",
+    "protocol": "obd",
+    "notes": "Праворульная, японский рынок: VIN нет, идентификация по номеру кузова. Экокласс 4. Масса 1620 / 2060 кг."
+  },
+  "protocol": "ISO 15765-4 CAN 11 бит 500 кбит/с",
+  "demo": false,
+  "mode": "obd",
+  "codes": [],
+  "mil": false,
+  "mil_count": 0,
+  "lamps": {
+    "Check Engine (MIL)": false
+  }
+}

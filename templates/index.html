@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Автоброкер · OBD-диагностика</title>
+<style>
+  :root {
+    --text:#1E2340; --muted:#7A809B; --line:rgba(120,130,190,.16);
+    --glass:rgba(255,255,255,.62); --glass2:rgba(255,255,255,.45); --border:rgba(255,255,255,.85);
+    --accent:#6C5CE7; --accent2:#4FA3FF; --grad:linear-gradient(135deg,#7B61FF 0%,#4FA3FF 100%);
+    --ok:#12A150; --okbg:#E3F7EA; --warn:#C27C00; --warnbg:#FFF1D6; --bad:#E5484D; --badbg:#FFE3E6;
+    --blue:#2F6FEB; --bluebg:#E4EEFF; --shadow:0 10px 30px rgba(84,92,180,.13);
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; scroll-padding-top:16px; }
+  body { margin:0; font:14.5px/1.5 "Segoe UI", Inter, Arial, sans-serif; color:var(--text); min-height:100vh;
+         background:
+           radial-gradient(900px 600px at 0% 0%, #DCD6FF 0%, transparent 60%),
+           radial-gradient(800px 600px at 100% 10%, #CFE6FF 0%, transparent 55%),
+           radial-gradient(700px 700px at 60% 100%, #E9E2FF 0%, transparent 60%),
+           linear-gradient(160deg,#F1F0FF 0%,#EAF3FF 55%,#F4F0FF 100%);
+         background-attachment:fixed; }
+  .glass { background:var(--glass); border:1px solid var(--border); box-shadow:var(--shadow);
+           backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%); }
+
+  /* ---- боковое меню ---- */
+  aside { position:fixed; top:16px; bottom:16px; left:16px; width:236px; border-radius:22px; padding:20px 14px;
+          display:flex; flex-direction:column; gap:4px; z-index:5; }
+  .logo { display:flex; align-items:center; gap:10px; padding:0 8px 18px; }
+  .logo .mark { width:38px; height:38px; border-radius:12px; background:var(--grad); color:#fff; display:grid; place-items:center;
+                font-size:19px; box-shadow:0 6px 16px rgba(108,92,231,.35); }
+  .logo b { font-size:16px; display:block; letter-spacing:.02em; } .logo small { color:var(--muted); font-size:12px; }
+  nav a { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:12px; color:var(--text);
+          text-decoration:none; font-size:14px; }
+  nav a:hover { background:rgba(255,255,255,.7); }
+  nav a.active { background:#fff; box-shadow:0 4px 14px rgba(84,92,180,.12); color:var(--accent); font-weight:600; }
+  nav a .i { width:22px; text-align:center; }
+  .side-card { margin-top:auto; border-radius:18px; padding:16px; color:#fff; background:var(--grad);
+               box-shadow:0 10px 24px rgba(108,92,231,.35); }
+  .side-card .t { font-weight:600; font-size:14px; margin-bottom:4px; } .side-card .s { font-size:12.5px; opacity:.9; }
+  .side-card button { margin-top:10px; width:100%; background:rgba(255,255,255,.22); color:#fff; border:1px solid rgba(255,255,255,.4); }
+
+  /* ---- основная часть ---- */
+  .wrap { margin-left:268px; padding:18px 22px 40px 4px; }
+  .topbar { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+  .topbar h1 { font-size:24px; margin:0; } .topbar .sub { color:var(--muted); font-size:13.5px; }
+  #statusBadge { margin-left:auto; padding:8px 14px; border-radius:999px; font-size:13px; color:var(--muted); }
+  #statusBadge.on { color:var(--ok); }
+  #statusBadge::before { content:""; display:inline-block; width:8px; height:8px; border-radius:50%; background:#B8BDD6; margin-right:8px; vertical-align:1px; }
+  #statusBadge.on::before { background:var(--ok); box-shadow:0 0 0 4px rgba(18,161,80,.15); }
+  #demoBanner { display:none; margin-bottom:14px; padding:12px 16px; border-radius:14px; background:var(--warnbg);
+                color:var(--warn); font-weight:600; border:1px solid #FFE1A8; }
+
+  .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:18px; }
+  .kpi { border-radius:18px; padding:16px 18px; }
+  .kpi .ic { width:40px; height:40px; border-radius:12px; display:grid; place-items:center; font-size:19px; margin-bottom:10px; }
+  .kpi .l { color:var(--muted); font-size:13px; } .kpi .v { font-size:24px; font-weight:700; margin-top:2px; }
+  .kpi .d { font-size:12px; color:var(--muted); margin-top:2px; }
+  .ic.v1 { background:#EEE9FF; } .ic.v2 { background:#FFE8EC; } .ic.v3 { background:#E3F0FF; } .ic.v4 { background:#E4F8EC; }
+
+  main { display:grid; grid-template-columns: 360px 1fr; gap:18px; align-items:start; }
+  @media (max-width: 1250px) { main { grid-template-columns:1fr; } .kpis { grid-template-columns:repeat(2,1fr); } }
+  @media (max-width: 860px) { aside { display:none; } .wrap { margin-left:0; padding:14px; } }
+  .card { border-radius:20px; padding:20px; margin-bottom:18px; }
+  .card h2 { font-size:16px; margin:0 0 14px; display:flex; align-items:center; gap:10px; }
+  .card h2 .ic { width:32px; height:32px; border-radius:10px; display:grid; place-items:center; font-size:16px; background:#EEE9FF; }
+  label { display:block; font-size:12.5px; color:var(--muted); margin:10px 0 5px; }
+  select, input[type=text] { width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(120,130,190,.25);
+           background:rgba(255,255,255,.85); color:var(--text); font-size:14px; outline:none; }
+  select:focus, input[type=text]:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(108,92,231,.15); }
+  .row { display:flex; gap:8px; align-items:center; }
+  button { padding:10px 16px; border:1px solid rgba(120,130,190,.22); border-radius:12px; background:rgba(255,255,255,.9);
+           color:var(--text); font-size:14px; cursor:pointer; font-family:inherit; transition:transform .08s, box-shadow .15s; }
+  button:hover:not(:disabled) { box-shadow:0 6px 16px rgba(84,92,180,.15); transform:translateY(-1px); }
+  button:disabled { opacity:.45; cursor:default; }
+  .primary { background:var(--grad); color:#fff; border:0; font-weight:600; box-shadow:0 6px 16px rgba(108,92,231,.3); }
+  .danger { background:#fff; color:var(--bad); border:1px solid #FFC9CE; font-weight:600; }
+  .big { width:100%; padding:12px; font-size:15px; margin-top:12px; }
+  .muted { color:var(--muted); font-size:13px; }
+  .kv { display:grid; grid-template-columns: 120px 1fr; gap:6px 10px; font-size:13.5px; }
+  .kv div:nth-child(odd) { color:var(--muted); }
+  .actions { display:flex; gap:10px; flex-wrap:wrap; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { text-align:left; padding:11px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+  tr:hover td { background:rgba(255,255,255,.45); }
+  .code { font-family:Consolas, "Cascadia Mono", monospace; font-weight:700; font-size:15px; white-space:nowrap; }
+  .sev { display:inline-block; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:600; white-space:nowrap; }
+  .sev.high { background:var(--badbg); color:var(--bad); }
+  .sev.medium { background:var(--warnbg); color:var(--warn); }
+  .sev.low { background:var(--bluebg); color:var(--blue); }
+  .hint { color:var(--muted); font-size:13px; margin-top:4px; }
+  .lamps { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+  .lamp { padding:6px 12px; border-radius:999px; background:rgba(255,255,255,.8); font-size:13px; border:1px solid var(--line); }
+  .lamp.on { background:var(--badbg); color:var(--bad); font-weight:600; border-color:#FFC9CE; }
+  .empty { padding:26px; text-align:center; color:var(--muted); }
+  .good { color:var(--ok); font-size:17px; font-weight:600; }
+  .live { display:grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap:12px; }
+  .tile { background:rgba(255,255,255,.7); border:1px solid var(--border); border-radius:14px; padding:12px 14px; }
+  .tile .n { color:var(--muted); font-size:12.5px; } .tile .v { font-size:22px; font-weight:700; } .tile .u { color:var(--muted); font-size:13px; margin-left:4px; }
+  #log { height:230px; overflow:auto; background:#1B1F3B; color:#C9CEEA; border-radius:14px; padding:10px 12px; font:12.5px/1.5 Consolas, monospace; }
+  #log .tx { color:#8FB8FF; } #log .rx { color:#D7DBF2; } #log .info { color:#6EE7A8; } #log .err { color:#FF8A8F; }
+  #toast { position:fixed; right:22px; bottom:22px; max-width:460px; padding:13px 18px; border-radius:14px; display:none; z-index:20;
+           background:#fff; box-shadow:0 12px 30px rgba(40,50,120,.2); border-left:4px solid var(--accent); }
+  #toast.err { border-left-color:var(--bad); } #toast.ok { border-left-color:var(--ok); }
+  .modal-bg { position:fixed; inset:0; background:rgba(40,44,90,.35); backdrop-filter:blur(4px); display:none; align-items:center; justify-content:center; z-index:15; }
+  .modal { background:rgba(255,255,255,.96); border-radius:20px; padding:24px; max-width:480px; box-shadow:0 20px 50px rgba(40,50,120,.25); }
+  .modal ul { padding-left:20px; color:var(--muted); }
+  .step { padding:12px 14px; border-left:3px solid var(--accent); background:rgba(255,255,255,.6); border-radius:12px; margin-bottom:10px; }
+  .chk { display:flex; gap:10px; padding:4px 0; font-size:14px; } .chk .ok { color:var(--ok); } .chk .no { color:var(--bad); }
+  .spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,.5); border-top-color:#fff; border-radius:50%;
+             animation:spin 0.8s linear infinite; vertical-align:-2px; margin-right:6px; }
+  button:not(.primary) .spinner { border-color:#ccd; border-top-color:var(--accent); }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  a { color:var(--accent); }
+  .glyph { stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; display:block; }
+  nav a .i .glyph { width:19px; height:19px; }
+  .card h2 .ic .glyph { width:19px; height:19px; }
+  .kpi .ic .glyph { width:22px; height:22px; }
+  .logo .mark .glyph { width:21px; height:21px; }
+  .kpi .ic, .card h2 .ic, .logo .mark { color:#fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 8px 18px rgba(70,80,160,.22); }
+  .ic.v1 { background: linear-gradient(135deg,#FB8A7E,#E5484D) !important; }
+  .ic.v2 { background: linear-gradient(135deg,#F7BE4B,#E8930C) !important; }
+  .ic.v3 { background: linear-gradient(135deg,#6BB0FF,#3B6FE0) !important; }
+  .ic.v4 { background: linear-gradient(135deg,#55D08C,#12A150) !important; }
+  .card h2 .ic { background: linear-gradient(135deg,#7B61FF,#4FA3FF) !important; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/><path d="M9.5 21v-6h5v6"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4.5"/><path d="M12 17h.01"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol>
+<symbol id="i-activity" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
+<symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 2c1.2 3 4 4.2 4 8a4 4 0 0 1-8 0c0-1.6.8-2.6 1.5-3.2C9 8.4 9 5 12 2z"/></symbol>
+<symbol id="i-car" viewBox="0 0 24 24"><path d="M3 14l2-5a2 2 0 0 1 1.9-1.3h10.2A2 2 0 0 1 19 9l2 5"/><path d="M3 14h18v4a1 1 0 0 1-1 1h-1.5"/><path d="M5.5 19H4a1 1 0 0 1-1-1v-4"/><circle cx="7.5" cy="17.4" r="1.7"/><circle cx="16.5" cy="17.4" r="1.7"/></symbol>
+<symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 2v6"/><path d="M15 2v6"/><path d="M6.5 8h11v3a5.5 5.5 0 0 1-11 0z"/><path d="M12 16.5V22"/></symbol>
+<symbol id="i-cpu" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.6"/><path d="M10 2.5v3M14 2.5v3M10 18.5v3M14 18.5v3M2.5 10h3M2.5 14h3M18.5 10h3M18.5 14h3"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 16.5h6"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M4.5 4.5l2.1 2.1M17.4 17.4l2.1 2.1M2.5 12h3M18.5 12h3M4.5 19.5l2.1-2.1M17.4 6.6l2.1-2.1"/></symbol>
+<symbol id="i-tool" viewBox="0 0 24 24"><path d="M15.5 4.2a5 5 0 0 0-6.2 6.4l-6.1 6.1a2 2 0 0 0 2.8 2.8l6.1-6.1a5 5 0 0 0 6.4-6.2l-3.1 3.1-2.9-2.9z"/></symbol>
+<symbol id="i-battery" viewBox="0 0 24 24"><rect x="2" y="8" width="16" height="9" rx="2"/><path d="M22 11.5v2.5"/><path d="M6 10.5v4M9.5 10.5v4"/></symbol>
+<symbol id="i-gauge" viewBox="0 0 24 24"><path d="M3.5 18a8.5 8.5 0 1 1 17 0"/><path d="M12 18l4.2-5.2"/><circle cx="12" cy="18" r="1.3"/></symbol>
+<symbol id="i-engine" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V13"/><path d="M12 16h.01"/></symbol>
+<symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9.5 18h5"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.7 10.7c.6.5 1.2 1.3 1.2 2.3h5c0-1 .6-1.8 1.2-2.3A6 6 0 0 0 12 3z"/></symbol>
+</defs></svg>
+<aside class="glass">
+  <div class="logo"><div class="mark"><svg class="glyph"><use href="#i-tool"/></svg></div><div><b id="navBrand">Автоброкер</b><small>OBD-диагностика</small></div></div>
+  <nav id="nav">
+    <a href="#top" class="active"><span class="i"><svg class="glyph"><use href="#i-home"/></svg></span>Обзор</a>
+    <a href="#secErrors"><span class="i"><svg class="glyph"><use href="#i-alert"/></svg></span>Ошибки</a>
+    <a href="#secBuyer"><span class="i"><svg class="glyph"><use href="#i-search"/></svg></span>Проверка при покупке</a>
+    <a href="#secLive"><span class="i"><svg class="glyph"><use href="#i-activity"/></svg></span>Живые данные</a>
+    <a href="#dpfCard" id="navDpf"><span class="i"><svg class="glyph"><use href="#i-flame"/></svg></span>Сажевый фильтр</a>
+    <a href="#secCar"><span class="i"><svg class="glyph"><use href="#i-car"/></svg></span>Автомобили</a>
+    <a href="#secConn"><span class="i"><svg class="glyph"><use href="#i-plug"/></svg></span>Подключение</a>
+    <a href="#secUsb"><span class="i"><svg class="glyph"><use href="#i-cpu"/></svg></span>Поиск адаптера</a>
+    <a href="#secDoip"><span class="i"><svg class="glyph"><use href="#i-plug"/></svg></span>DoIP (Ethernet)</a>
+    <a href="#secLog"><span class="i"><svg class="glyph"><use href="#i-file"/></svg></span>Журнал</a>
+    <a href="#" onclick="openBrand();return false"><span class="i"><svg class="glyph"><use href="#i-settings"/></svg></span>Настройки отчёта</a>
+  </nav>
+  <div class="side-card">
+    <div class="t">PDF-отчёт для клиента</div>
+    <div class="s">Красивый отчёт с вашим логотипом, ошибками, пробегом и проверкой блоков.</div>
+    <button id="btnPdfSide" onclick="openPdf()" disabled>Скачать PDF</button>
+  </div>
+</aside>
+
+<div class="wrap" id="top">
+  <div class="topbar">
+    <div><h1>Диагностика</h1><div class="sub"><span id="carTitle"></span></div></div>
+    <div id="statusBadge" class="glass">Не подключено</div>
+  </div>
+  <div id="demoBanner">⚠ ДЕМО-РЕЖИМ — ошибки и данные НЕНАСТОЯЩИЕ (имитация). Для реальной машины снимите галочку «Демо-режим» и подключитесь заново.</div>
+
+  <div class="kpis">
+    <div class="kpi glass"><div class="ic v1"><svg class="glyph"><use href="#i-alert"/></svg></div><div class="l">Коды неисправностей</div><div class="v" id="kpiCodes">—</div><div class="d" id="kpiCodesD">после сканирования</div></div>
+    <div class="kpi glass"><div class="ic v2"><svg class="glyph"><use href="#i-engine"/></svg></div><div class="l">Check Engine</div><div class="v" id="kpiMil">—</div><div class="d" id="kpiMilD">лампа неисправности</div></div>
+    <div class="kpi glass"><div class="ic v3"><svg class="glyph"><use href="#i-gauge"/></svg></div><div class="l">Пробег по блокам</div><div class="v" id="kpiOdo">—</div><div class="d" id="kpiOdoD">«Проверка при покупке»</div></div>
+    <div class="kpi glass"><div class="ic v4"><svg class="glyph"><use href="#i-battery"/></svg></div><div class="l">Напряжение</div><div class="v" id="kpiVolt">—</div><div class="d" id="kpiVoltD">на разъёме OBD</div></div>
+  </div>
+
+<main>
+  <div>
+    <div class="card glass" id="secCar">
+      <h2><span class="ic"><svg class="glyph"><use href="#i-car"/></svg></span>Автомобиль</h2>
+      <div class="row">
+        <select id="carSelect" onchange="selectCar(this.value)"></select>
+        <button onclick="openCar()" title="Добавить машину">＋</button>
+        <button onclick="openCar(true)" title="Изменить">✎</button>
+      </div>
+      <div class="kv" id="vehicle" style="margin-top:14px"></div>
+    </div>
+
+    <div class="card glass" id="secConn">
+      <h2><span class="ic"><svg class="glyph"><use href="#i-plug"/></svg></span>Подключение</h2>
+      <label>COM-порт адаптера</label>
+      <div class="row">
+        <select id="port"></select>
+        <button onclick="loadPorts()" title="Обновить список">⟳</button>
+      </div>
+      <label>Протокол</label>
+      <select id="mode">
+        <option value="auto">Автоопределение (сначала OBD-II, потом J1939)</option>
+        <option value="obd">OBD-II (легковые, CAN/ISO/KWP)</option>
+        <option value="j1939">J1939 (грузовой CAN 250k)</option>
+        <option value="doip">DoIP (Ethernet) — читается в разделе «DoIP»</option>
+      </select>
+      <label>Скорость порта</label>
+      <select id="baud">
+        <option value="">Подобрать автоматически</option>
+        <option>38400</option><option>115200</option><option>9600</option><option>57600</option>
+      </select>
+      <label style="display:flex;gap:8px;align-items:center;color:var(--text)">
+        <input type="checkbox" id="demo"> Демо-режим (без машины, для проверки)
+      </label>
+      <button class="primary big" id="btnConnect" onclick="connect()">Подключиться</button>
+      <button class="big" id="btnDisconnect" onclick="disconnect()" disabled>Отключиться</button>
+      <div class="kv" style="margin-top:14px" id="connInfo"></div>
+    </div>
+
+    <div class="card glass" id="secUsb">
+      <h2><span class="ic"><svg class="glyph"><use href="#i-cpu"/></svg></span>Поиск адаптера (USB)</h2>
+      <div class="muted">Покажет, видит ли Windows адаптер, какой у него чип и нужен ли драйвер.</div>
+      <button class="big" id="btnUsb" onclick="usbScan()">🔌 Найти адаптер</button>
+      <div class="muted" style="margin-top:8px">
+        Проверка «вынул-вставил»: выньте адаптер → <a href="#" onclick="usbBase();return false">запомнить список</a>
+        → вставьте адаптер → «Найти адаптер». Новые устройства будут отмечены 🆕.
+      </div>
+      <div id="usbResult" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card glass" id="secDoip">
+      <h2><span class="ic"><svg class="glyph"><use href="#i-plug"/></svg></span>DoIP по Ethernet — Li и новые EV</h2>
+      <div class="muted" style="margin-bottom:10px">Для кабеля OBD→RJ45→USB (чип ASIX). Читает блоки, закрытые шлюзом, где обычный ELM327 бессилен.
+        ⚠ Экспериментально: сначала найдите машину, потом читайте. Только чтение.</div>
+      <div class="actions">
+        <button class="primary" id="btnDoipFind" onclick="doipScan(false)">🔍 Найти машину по DoIP</button>
+        <button id="btnDoipDeep" onclick="doipScan(true)">🧭 Глубокий перебор блоков</button>
+        <button id="btnDoipLive" onclick="doipLive()">📟 Живые показания (DoIP)</button>
+        <button id="btnDoipClear" onclick="doipClear()">🗑 Стереть ошибки (DoIP)</button>
+        <button id="btnNet" onclick="netCheck()">🌐 Проверить сеть</button>
+      </div>
+      <div class="muted" style="margin-top:8px">Перед запуском: кабель в OBD, зажигание/Ready включено, адаптер ASIX подключён.</div>
+      <div class="step" style="margin-top:12px">
+        <b>Если авто-поиск молчит (как с Li), а Launch этим кабелем работает</b> — пропишите адаптеру статический IP, как делает Launch:
+        <div class="muted" style="margin:6px 0">1. Пуск → «Просмотр сетевых подключений» (ncpa.cpl). 2. Правой кнопкой по адаптеру <b>ASIX AX88772C</b> (Ethernet 4) → «Свойства». 3. «IP версии 4 (TCP/IPv4)» → «Свойства». 4. «Использовать следующий IP»: адрес <b>192.168.1.2</b>, маска <b>255.255.255.0</b>, шлюз пустой. OK. 5. Вернитесь сюда и нажмите кнопку ниже.</div>
+        <div class="actions">
+          <button class="primary" id="btnAutoIp" onclick="autoIp()">⚡ Прописать IP 192.168.1.2 и сканировать</button>
+          <button id="btnDoipManual" onclick="doipManual()">🔎 Только сканировать</button>
+          <button id="btnDhcp" onclick="setDhcp()">↩ Вернуть авто-IP (DHCP)</button>
+        </div>
+        <div class="muted" style="margin-top:6px">Кнопка «Прописать IP» сделает всё сама (может появиться окно Windows с запросом прав — нажмите «Да»). Если не 192.168.1.x — узнайте у Launch его IP и впишите такой же в поле ниже.</div>
+        <div class="row" style="margin-top:8px;max-width:280px"><input type="text" id="ipManual" value="192.168.1.2" placeholder="IP, напр. 192.168.1.2"></div>
+      </div>
+      <div id="doipLiveResult" style="margin-top:12px"></div>
+      <div id="doipResult" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card glass">
+      <h2><span class="ic"><svg class="glyph"><use href="#i-bulb"/></svg></span>Перед диагностикой</h2>
+      <div class="muted">
+        1. Адаптер в разъём OBD (16 pin), USB — в ноутбук.<br>
+        2. Зажигание <b>включено</b>. Для чтения можно с работающим двигателем.<br>
+        3. Стирать ошибки — при <b>заглушенном двигателе</b> и включённом зажигании.<br>
+        4. ⚠ У грузовиков (Isuzu 4HK1) бортсеть часто <b>24 В</b> — адаптер должен поддерживать 24 В.
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card glass" id="secErrors">
+      <h2><span class="ic"><svg class="glyph"><use href="#i-alert"/></svg></span>Ошибки</h2>
+      <div class="actions">
+        <button class="primary" id="btnScan" onclick="scan()" disabled>🔍 Сканировать ошибки</button>
+        <button class="danger" id="btnClear" onclick="askClear()" disabled>🗑 Стереть ошибки</button>
+        <button id="btnPdf" onclick="openPdf()" disabled>📄 PDF-отчёт</button>
+        <button id="btnReport" onclick="location.href='/api/report'" disabled>TXT</button>
+      </div>
+      <div id="scanResult" style="margin-top:14px"><div class="empty">Подключитесь и нажмите «Сканировать ошибки»</div></div>
+    </div>
+
+    <div class="card glass" id="secBuyer">
+      <h2><span class="ic"><svg class="glyph"><use href="#i-search"/></svg></span>Проверка при покупке</h2>
+      <div class="muted" style="margin-bottom:12px">Пробег из блоков, VIN в каждом блоке, готовность систем и признаки недавнего сброса ошибок.
+        Только чтение — в машине ничего не меняется.</div>
+      <div class="actions">
+        <button class="primary" id="btnBuyer" onclick="buyerCheck(false)" disabled>🔎 Быстрая проверка</button>
+        <button id="btnBuyerFull" onclick="buyerCheck(true)" disabled>🧭 Полная: опросить все блоки (~30 с)</button>
+      </div>
+      <div id="buyerResult" style="margin-top:14px"></div>
+      <div id="odoPanel" class="step" style="display:none;margin-top:16px">
+        <b>🔍 Поиск пробега в блоках</b>
+        <div class="muted" style="margin:4px 0 10px">Если пробег из блоков не найден (например, Changan), введите пробег с приборной панели —
+          программа переберёт ячейки данных выбранных блоков (только чтение), найдёт, где записано это число, и запомнит место для этой марки.
+          Около 1 минуты на блок. Лучше выбирать приборную панель и блок двигателя; пробег должен быть больше ~1000 км.</div>
+        <div class="row" style="gap:10px;align-items:flex-end">
+          <div style="width:200px"><label>Пробег на панели, км</label><input type="text" id="odoKm" placeholder="например 45210"></div>
+          <button class="primary" id="btnOdo" onclick="odoSearch()">Найти пробег</button>
+        </div>
+        <label>Блоки для поиска</label>
+        <div id="odoEcus" class="lamps"></div>
+        <div id="odoResult"></div>
+      </div>
+    </div>
+
+    <div class="card glass" id="dpfCard">
+      <h2><span class="ic"><svg class="glyph"><use href="#i-flame"/></svg></span>Прожиг сажевого фильтра (DPD) кнопкой на панели</h2>
+      <div class="muted" style="margin-bottom:10px">
+        Сама программа прожиг не запускает: сервисная регенерация Isuzu доступна только дилерскому сканеру.
+        Помощник сотрёт ошибки, проверит условия и проследит за прожигом, который вы запустите кнопкой DPD.
+      </div>
+      <div class="steps">
+        <div class="step"><b>Шаг 1.</b> Прочитайте ошибки и скачайте отчёт. Потом сотрите ошибки:
+          с активной ошибкой Check Engine блок часто не даёт прожигать.
+          <div class="actions" style="margin-top:8px"><button onclick="askClear()" id="dpfClear" disabled>🗑 Стереть ошибки</button></div></div>
+        <div class="step"><b>Шаг 2.</b> Заведите двигатель и поставьте машину в безопасное место: нейтраль, ручник,
+          ничего горючего рядом с выхлопом (сухая трава, мусор), педали не нажимать.
+          <div class="actions" style="margin-top:8px"><button class="primary" onclick="dpfStart()" id="dpfBtn" disabled>▶ Проверить условия и следить за прожигом</button>
+          <button onclick="dpfStop()" id="dpfStopBtn" style="display:none">■ Остановить наблюдение</button></div></div>
+        <div id="dpfChecks" style="margin:10px 0"></div>
+        <div class="step"><b>Шаг 3.</b> Когда все условия зелёные, нажмите и подержите кнопку <b>DPD</b> на панели 1–3 секунды.
+          Обороты поднимутся примерно до 1000–1400, лампа DPD загорится ровно. Прожиг идёт ~15–30 минут.
+          Он закончится, когда лампа погаснет и обороты упадут. Не глушите двигатель и не трогайте педали.
+          <div class="hint">Если лампа DPD не мигает и кнопка ничего не делает — блок не просит прожиг или запрещает его
+          (например, сажи слишком много). Тогда нужна сервисная регенерация у дилера.</div></div>
+      </div>
+      <div class="live" id="dpfLive" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card glass" id="secLive">
+      <h2><span class="ic"><svg class="glyph"><use href="#i-activity"/></svg></span>Живые данные</h2>
+      <div class="actions">
+        <button id="btnLive" onclick="liveOnce()" disabled>Прочитать</button>
+        <label style="display:flex;gap:8px;align-items:center;margin:0;color:var(--text)">
+          <input type="checkbox" id="liveAuto" onchange="toggleLive()" disabled> Обновлять постоянно
+        </label>
+      </div>
+      <div class="live" id="live" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card glass" id="secLog">
+      <h2><span class="ic"><svg class="glyph"><use href="#i-file"/></svg></span>Журнал адаптера</h2>
+      <div id="log"></div>
+      <div class="row" style="margin-top:8px">
+        <input type="text" id="rawCmd" placeholder="Команда вручную, например ATRV или 0100" onkeydown="if(event.key==='Enter')sendRaw()">
+        <button onclick="sendRaw()">Отправить</button>
+      </div>
+      <div class="muted" style="margin-top:6px">Если что-то не работает — скопируйте журнал и пришлите мне.</div>
+    </div>
+  </div>
+</main>
+</div>
+
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h3 style="margin-top:0;color:var(--bad)">Стереть ошибки?</h3>
+    <ul>
+      <li>Двигатель заглушен, зажигание включено.</li>
+      <li>Стирание не чинит неисправность — если причина осталась, ошибка вернётся.</li>
+      <li>Сбросятся готовность систем самодиагностики и данные стоп-кадра.</li>
+      <li>Совет: сначала скачайте отчёт.</li>
+    </ul>
+    <div class="actions" style="justify-content:flex-end">
+      <button onclick="closeModal()">Отмена</button>
+      <button class="danger" onclick="doClear()">Да, стереть</button>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="carModal">
+  <div class="modal" style="max-width:560px;width:95%">
+    <h3 style="margin-top:0" id="carModalTitle">Новый автомобиль</h3>
+    <input type="hidden" id="cId">
+    <label>VIN (17 символов)</label>
+    <div class="row"><input type="text" id="cVin" maxlength="17" style="text-transform:uppercase;font-family:Consolas,monospace" oninput="vinTyped()">
+      <button onclick="vinDecode(true)">Расшифровать</button></div>
+    <div id="vinInfo" class="hint" style="min-height:18px"></div>
+    <div class="row" style="gap:10px">
+      <div style="flex:1"><label>Марка</label><input type="text" id="cMake"></div>
+      <div style="flex:1"><label>Модель</label><input type="text" id="cModel"></div>
+      <div style="width:90px"><label>Год</label><input type="text" id="cYear"></div>
+    </div>
+    <div class="row" style="gap:10px">
+      <div style="flex:1"><label>Номер кузова (если нет VIN)</label><input type="text" id="cBody" placeholder="например: C26-080743"></div>
+      <div style="flex:1"><label>Гос. номер</label><input type="text" id="cPlate"></div>
+    </div>
+    <label>Производитель / сборка</label><input type="text" id="cManufacturer">
+    <label>Двигатель</label><input type="text" id="cEngine" placeholder="например: 2.5 Skyactiv-G, бензин">
+    <div class="row" style="gap:10px">
+      <div style="flex:1"><label>Топливо</label><select id="cFuel"><option>бензин</option><option>дизель</option><option>гибрид</option><option>газ</option><option>электро</option></select></div>
+      <div style="flex:1"><label>Бортсеть</label><select id="cVoltage"><option value="12">12 В (легковые)</option><option value="24">24 В (грузовые)</option></select></div>
+      <div style="flex:1"><label>Протокол</label><select id="cProtocol"><option value="auto">Авто</option><option value="obd">OBD-II</option><option value="j1939">J1939</option><option value="doip">DoIP (Ethernet)</option></select></div>
+    </div>
+    <label>Заметки</label><input type="text" id="cNotes">
+    <div class="actions" style="justify-content:space-between;margin-top:16px">
+      <button class="danger" id="cDelete" onclick="deleteCar()">Удалить</button>
+      <div class="actions"><button onclick="$('carModal').style.display='none'">Отмена</button>
+        <button class="primary" onclick="saveCar()">Сохранить</button></div>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="brandModal">
+  <div class="modal" style="max-width:480px;width:95%">
+    <h3 style="margin-top:0">Настройки PDF-отчёта</h3>
+    <label>Название (шапка отчёта)</label><input type="text" id="b_brand">
+    <div class="row" style="gap:10px">
+      <div style="flex:1"><label>Сайт</label><input type="text" id="b_site"></div>
+      <div style="flex:1"><label>Город</label><input type="text" id="b_city"></div>
+    </div>
+    <label>Телефон</label><input type="text" id="b_phone" placeholder="+7 ...">
+    <label>Диагностику провёл (ФИО для подписи)</label><input type="text" id="b_inspector">
+    <div class="actions" style="justify-content:flex-end;margin-top:16px">
+      <button onclick="$('brandModal').style.display='none'">Отмена</button>
+      <button class="primary" onclick="saveBrand()">Сохранить</button>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+let liveTimer = null, busy = false;
+const SEV = {high:"высокая", medium:"средняя", low:"низкая"};
+
+async function call(url, body) {
+  const opt = body === undefined ? {} : {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)};
+  const r = await fetch(url, opt);
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || "Ошибка");
+  return j;
+}
+function toast(msg, kind="") {
+  const t = $("toast"); t.textContent = msg; t.className = kind; t.style.display = "block";
+  clearTimeout(t._h); t._h = setTimeout(() => t.style.display = "none", kind === "err" ? 9000 : 4000);
+}
+function esc(s) { return String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function setBusy(btn, text) {
+  busy = !!text;
+  if (text) { btn._old = btn.innerHTML; btn.innerHTML = `<span class="spinner"></span>${text}`; btn.disabled = true; }
+  else { btn.innerHTML = btn._old; btn.disabled = false; }
+}
+
+async function loadPorts() {
+  try {
+    const j = await call("/api/ports");
+    $("port").innerHTML = j.ports.length
+      ? j.ports.map(p => `<option value="${esc(p.device)}">${esc(p.device)} — ${esc(p.description)}</option>`).join("")
+      : `<option value="">Порты не найдены (вставьте адаптер / включите демо)</option>`;
+  } catch (e) { toast(e.message, "err"); }
+}
+let cars = [], currentCar = {};
+async function loadVehicle() {
+  const j = await call("/api/vehicles");
+  cars = j.vehicles;
+  currentCar = cars.find(c => c.id === j.selected) || cars[0] || {};
+  if (cars.length) {
+    const makes = [];
+    cars.forEach(c => { const m = c.make || "Прочее"; if (!makes.includes(m)) makes.push(m); });
+    $("carSelect").innerHTML = makes.map(m => {
+      const opts = cars.filter(c => (c.make || "Прочее") === m).map(c => {
+        const label = [c.model, c.year].filter(Boolean).join(" · ");
+        return `<option value="${esc(c.id)}" ${c.id === currentCar.id ? "selected" : ""}>${esc(label)}</option>`;
+      }).join("");
+      return `<optgroup label="${esc(m)}">${opts}</optgroup>`;
+    }).join("");
+  } else {
+    $("carSelect").innerHTML = `<option value="">— добавьте машину кнопкой ＋ —</option>`;
+  }
+  const v = currentCar;
+  const titleMake = (v.model || "").startsWith(v.make || "\u0000") ? "" : v.make;
+  $("carTitle").textContent = [titleMake, v.model, v.year].filter(Boolean).join(" ");
+  const rows = [["VIN", v.vin], ["Кузов", v.body], ["Гос. номер", v.plate], ["Производитель", v.manufacturer], ["Двигатель", v.engine], ["Топливо", v.fuel],
+                ["Бортсеть", v.voltage && v.voltage + " В"], ["Заметки", v.notes]];
+  $("vehicle").innerHTML = rows.filter(r => r[1]).map(r => `<div>${r[0]}</div><div>${esc(r[1])}</div>`).join("")
+    + `<div>VIN из ЭБУ</div><div id="vinEcu">—</div>`;
+  if (v.protocol) $("mode").value = v.protocol;
+  const diesel = (v.fuel || "").startsWith("диз");
+  $("dpfCard").style.display = diesel ? "" : "none";
+  $("navDpf").style.display = diesel ? "" : "none";
+  if (v.voltage === "24") $("vehicle").innerHTML += `<div></div><div style="color:var(--warn)">⚠ 24 В — адаптер должен поддерживать 24 В</div>`;
+}
+async function selectCar(id) {
+  try { await call("/api/vehicles/select", {id}); await loadVehicle(); toast("Выбрана: " + $("carTitle").textContent, "ok"); }
+  catch (e) { toast(e.message, "err"); }
+}
+function openCar(edit) {
+  const c = edit ? currentCar : {fuel:"бензин", voltage:"12", protocol:"auto"};
+  if (edit && !c.id) return toast("Сначала добавьте машину", "err");
+  $("carModalTitle").textContent = edit ? "Изменить автомобиль" : "Новый автомобиль";
+  $("cId").value = edit ? c.id : "";
+  [["cVin","vin"],["cBody","body"],["cPlate","plate"],["cMake","make"],["cModel","model"],["cYear","year"],["cManufacturer","manufacturer"],["cEngine","engine"],["cNotes","notes"]]
+    .forEach(([el,k]) => $(el).value = c[k] ?? "");
+  $("cFuel").value = c.fuel || "бензин"; $("cVoltage").value = c.voltage || "12"; $("cProtocol").value = c.protocol || "auto";
+  $("cDelete").style.display = edit ? "" : "none";
+  $("vinInfo").textContent = "";
+  $("carModal").style.display = "flex";
+  if (c.vin) vinDecode(false);
+}
+function vinTyped() { const v = $("cVin").value.trim(); if (v.length === 17) vinDecode(true); else $("vinInfo").textContent = v ? `${v.length} из 17` : ""; }
+async function vinDecode(fill) {
+  const v = $("cVin").value.trim().toUpperCase(); if (!v) return;
+  try {
+    const d = (await call("/api/vin/" + encodeURIComponent(v))).vin;
+    if (d.errors.length) { $("vinInfo").innerHTML = `<span style="color:var(--bad)">${esc(d.errors.join("; "))}</span>`; return; }
+    $("vinInfo").innerHTML = `${esc(d.manufacturer)} · ${d.year ?? "?"} модельный год · `
+      + `<span style="color:${d.check_ok ? "var(--ok)" : "var(--warn)"}">${esc(d.check_note)}</span>`;
+    if (fill) {
+      if (!$("cYear").value && d.year) $("cYear").value = d.year;
+      if (!$("cManufacturer").value && !d.manufacturer.startsWith("неизв")) $("cManufacturer").value = d.manufacturer;
+      if (!$("cMake").value && !d.manufacturer.startsWith("неизв")) $("cMake").value = d.manufacturer.split(/[ (\/]/)[0];
+    }
+  } catch (e) { $("vinInfo").textContent = e.message; }
+}
+async function saveCar() {
+  const body = {id:$("cId").value, vin:$("cVin").value, body:$("cBody").value, plate:$("cPlate").value, make:$("cMake").value, model:$("cModel").value, year:$("cYear").value,
+    manufacturer:$("cManufacturer").value, engine:$("cEngine").value, fuel:$("cFuel").value, voltage:$("cVoltage").value,
+    protocol:$("cProtocol").value, notes:$("cNotes").value};
+  try { await call("/api/vehicles", body); $("carModal").style.display = "none"; await loadVehicle(); toast("Сохранено", "ok"); }
+  catch (e) { toast(e.message, "err"); }
+}
+async function deleteCar() {
+  if (!confirm("Удалить машину из списка? Отчёты в папке reports останутся.")) return;
+  try { await call("/api/vehicles/delete", {id:$("cId").value}); $("carModal").style.display = "none"; await loadVehicle(); }
+  catch (e) { toast(e.message, "err"); }
+}
+function setConnected(on, st) {
+  $("statusBadge").textContent = on ? `Подключено${st.demo ? " (ДЕМО)" : ""} · ${st.protocol}` : "Не подключено";
+  $("statusBadge").className = on ? "glass on" : "glass";
+  if (on && st.voltage != null) setKpi("kpiVolt", st.voltage + " В", st.voltage < 12.2 ? "низковато (норма ≥12,4 В)" : "на разъёме OBD");
+  ["btnScan","btnClear","btnLive","liveAuto","btnDisconnect","dpfClear","dpfBtn","btnBuyer","btnBuyerFull"].forEach(id => $(id).disabled = !on);
+  $("demoBanner").style.display = on && st.demo ? "block" : "none";
+  if (!on) dpfStop();
+  $("btnConnect").disabled = on;
+  $("connInfo").innerHTML = on ? `<div>Адаптер</div><div>${esc(st.elm)}</div><div>Протокол</div><div>${esc(st.protocol)}</div>
+      <div>Напряжение</div><div>${st.voltage ?? "—"} В</div>` : "";
+  if (!on) { $("liveAuto").checked = false; toggleLive(); }
+}
+
+async function connect() {
+  const btn = $("btnConnect");
+  setBusy(btn, "Подключаюсь... (до 30 с)");
+  try {
+    const j = await call("/api/connect", {port:$("port").value, mode:$("mode").value, demo:$("demo").checked, baud:$("baud").value});
+    setBusy(btn); setConnected(true, j.status);
+    await loadVehicle();
+    if ($("vinEcu")) $("vinEcu").textContent = j.vin || "не прочитан";
+    toast("Связь с машиной установлена" + (j.vin_note ? ". " + j.vin_note : ""), "ok");
+  } catch (e) { setBusy(btn); toast(e.message, "err"); }
+}
+async function disconnect() {
+  try { await call("/api/disconnect", {}); } catch (e) {}
+  setConnected(false, {});
+}
+
+async function scan() {
+  const btn = $("btnScan"); setBusy(btn, "Сканирую...");
+  try {
+    const j = await call("/api/scan", {});
+    renderScan(j.scan); ["btnReport","btnPdf","btnPdfSide"].forEach(id => $(id).disabled = false);
+    const n = j.scan.codes.length, hi = j.scan.codes.filter(c => c.severity === "high").length;
+    setKpi("kpiCodes", n, n ? (hi ? `из них серьёзных: ${hi}` : "серьёзных нет") : "ошибок нет", n ? (hi ? "var(--bad)" : "var(--warn)") : "var(--ok)");
+    if (j.scan.mil !== null && j.scan.mil !== undefined) setKpi("kpiMil", j.scan.mil ? "Горит" : "Не горит", j.scan.mode === "j1939" ? "по данным DM1" : "лампа неисправности", j.scan.mil ? "var(--bad)" : "var(--ok)");
+    toast(`Найдено ошибок: ${j.scan.codes.length}. Сохранено: reports/${j.saved}`, j.scan.codes.length ? "" : "ok");
+  } catch (e) { toast(e.message, "err"); }
+  setBusy(btn);
+}
+function renderScan(s) {
+  let h = "";
+  const lamps = Object.entries(s.lamps || {});
+  if (lamps.length) h += `<div class="lamps">${lamps.map(([k,v]) => `<span class="lamp ${v?"on":""}">${esc(k)}: ${v?"ГОРИТ":"не горит"}</span>`).join("")}</div>`;
+  if (!s.codes.length) { $("scanResult").innerHTML = h + `<div class="empty good">✔ Ошибок не найдено</div>`; return; }
+  h += `<table><tr><th>Код</th><th>Расшифровка</th><th>Тип / блок</th><th>Важность</th></tr>`;
+  for (const c of s.codes) {
+    h += `<tr><td class="code">${esc(c.code)}</td>
+      <td>${esc(c.description)}<div class="hint">${esc(c.system)}${c.hint ? " · 💡 " + esc(c.hint) : ""}</div></td>
+      <td>${esc(c.type)}<div class="hint">${esc(c.ecu)}</div></td>
+      <td><span class="sev ${c.severity}">${SEV[c.severity]}</span></td></tr>`;
+  }
+  $("scanResult").innerHTML = h + "</table>";
+}
+
+function askClear() { $("modal").style.display = "flex"; }
+function closeModal() { $("modal").style.display = "none"; }
+async function doClear() {
+  closeModal(); const btn = $("btnClear"); setBusy(btn, "Стираю...");
+  try {
+    const j = await call("/api/clear", {});
+    toast(j.clear.message, "ok");
+    setBusy(btn); await scan(); return;
+  } catch (e) { toast(e.message, "err"); }
+  setBusy(btn);
+}
+
+function isDoip() { return !!(currentCar && currentCar.protocol === "doip"); }
+async function liveOnce() {
+  if (busy) return;
+  try {
+    const j = await call(isDoip() ? "/api/doip_live" : "/api/live");
+    const rows = j.rows || [];
+    const va = rows.find(r => r.name.startsWith("Напряжение на разъёме")) || rows.find(r => r.name.startsWith("Напряжение"));
+    if (va) setKpi("kpiVolt", va.value + " В", va.value < 12.2 ? "низковато (норма ≥12,4 В)" : (va.value > 13.4 ? "генератор заряжает" : "на разъёме OBD"));
+    const od = rows.find(r => r.name.startsWith("Пробег (одометр"));
+    if (od) setKpi("kpiOdo", fmtKm(od.value) + " км", "одометр по OBD");
+    $("live").innerHTML = rows.length ? rows.map(r =>
+      `<div class="tile"><div class="n">${esc(r.name)}</div><div><span class="v">${esc(r.value)}</span><span class="u">${esc(r.unit)}</span></div></div>`).join("")
+      : `<div class="muted">${esc(isDoip() && j.live && j.live.note ? j.live.note : "Машина не отдала параметры")}</div>`;
+  } catch (e) { toast(e.message, "err"); $("liveAuto").checked = false; toggleLive(); }
+}
+async function liveLoop() {
+  if (!$("liveAuto").checked) return;
+  await liveOnce();
+  liveTimer = setTimeout(liveLoop, 1000);
+}
+function toggleLive() { clearTimeout(liveTimer); if ($("liveAuto").checked) liveLoop(); }
+
+// ---------- проверка при покупке ----------
+const fmtKm = n => Number(n).toLocaleString("ru-RU");
+async function buyerCheck(full) {
+  $("liveAuto").checked = false; toggleLive();
+  const btn = full ? $("btnBuyerFull") : $("btnBuyer");
+  setBusy(btn, full ? "Опрашиваю все блоки..." : "Проверяю...");
+  try {
+    const j = await call(isDoip() ? "/api/doip_buyer" : "/api/buyer", {full}), b = j.buyer, r = b.readiness;
+    let h = "";
+    b.warnings.forEach(w => h += `<div style="color:var(--warn);margin-bottom:6px">⚠ ${esc(w)}</div>`);
+    b.notes.forEach(n => h += `<div class="muted" style="margin-bottom:6px">• ${esc(n)}</div>`);
+    const groups = b.odometer_groups || [];
+    if (groups.length) {
+      h += `<h3 style="font-size:14px;margin:14px 0 6px">Пробег</h3><table>`;
+      groups.forEach(g => h += `<tr><td class="code">${fmtKm(g.km)} км</td><td>${g.sources.length > 1
+        ? `<b style="color:var(--ok)">совпадает в ${g.sources.length} блоках</b><div class="hint">${esc(g.sources.join(", "))}</div>`
+        : esc(g.sources[0])}</td></tr>`);
+      h += `</table><div class="hint">${groups.length === 1 && groups[0].sources.length > 1 ? "Одинаковый пробег во всех блоках — хороший признак. " : ""}Сверьте с одометром на приборной панели.</div>`;
+      const top = groups.reduce((a, g) => g.km > a ? g.km : a, 0);
+      setKpi("kpiOdo", fmtKm(top) + " км", groups.length === 1 ? `совпадает в ${groups[0].sources.length} блоках` : "есть расхождения!", groups.length === 1 ? "" : "var(--warn)");
+    }
+    const cnt = [["Пробег после сброса ошибок", r.km_since_clear, "км"], ["Прогревов после сброса", r.warmups_since_clear, ""],
+                 ["Работа после сброса", r.min_since_clear, "мин"], ["Пробег с горящим Check Engine", r.km_with_mil, "км"],
+                 ["Стандарт OBD", r.obd_std, ""]].filter(x => x[1] !== undefined && x[1] !== null);
+    if (cnt.length) h += `<div class="live" style="margin-top:12px">` + cnt.map(([n,v,u]) =>
+      `<div class="tile"><div class="n">${esc(n)}</div><div><span class="v" style="font-size:18px">${esc(v)}</span><span class="u">${esc(u)}</span></div></div>`).join("") + `</div>`;
+    if (r.monitors.length) {
+      h += `<h3 style="font-size:14px;margin:14px 0 6px">Готовность систем самодиагностики</h3><div class="lamps">`;
+      r.monitors.forEach(m => h += `<span class="lamp" style="${m.ready ? "color:var(--ok)" : "color:var(--warn)"}">${m.ready ? "✔" : "⏳"} ${esc(m.name)}</span>`);
+      h += `</div>`;
+    }
+    if (b.block_dtcs && b.block_dtcs.length) {
+      const act = b.block_dtcs.filter(d => d.active).length;
+      h += `<h3 style="font-size:14px;margin:16px 0 6px">Ошибки по блокам (${b.block_dtcs.length}${act ? `, активных ${act}` : ""})</h3>
+        <table><tr><th>Код</th><th>Блок</th><th>Расшифровка</th><th>Статус</th></tr>`;
+      b.block_dtcs.forEach(d => {
+        const c = d.active ? "var(--bad)" : (d.stored ? "var(--warn)" : "var(--muted)");
+        h += `<tr><td class="code">${esc(d.full)}</td><td style="font-size:13px">${esc(d.ecu)}</td>
+          <td>${esc(d.description)}${d.hint ? `<div class="hint">💡 ${esc(d.hint)}</div>` : ""}</td>
+          <td><span class="sev ${d.active ? "high" : (d.stored ? "medium" : "low")}">${esc(d.status)}</span></td></tr>`;
+      });
+      h += `</table><div class="hint">Коды производителя (например, Li/Changan) могут показываться без описания — пришлите их, добавлю в базу.</div>`;
+    }
+    if (b.ecus.length) {
+      h += `<h3 style="font-size:14px;margin:16px 0 6px">Блоки (${b.ecus.length})</h3><table><tr><th>Блок</th><th>VIN в блоке</th><th>Номер / ПО</th><th>Ошибки</th><th>Пробег</th></tr>`;
+      const carVin = (currentCar.vin || "").toUpperCase();
+      b.ecus.forEach(e => {
+        const bad = e.vin && e.vin.length === 17 && carVin && e.vin.toUpperCase() !== carVin;
+        const km = e.odometer_km, dc = e.dtc_count;
+        h += `<tr><td>${esc(e.name)}</td><td class="code" style="font-size:13px;${bad ? "color:var(--bad)" : ""}">${esc(e.vin || "—")}</td>
+          <td style="font-size:13px">${esc(e.part_number || "—")}<div class="hint">${esc(e.software || "")}${e.serial ? " · s/n " + esc(e.serial) : ""}</div></td>
+          <td>${dc === undefined ? "—" : (dc ? `<b style="color:var(--bad)">${dc}</b>` : `<span style="color:var(--ok)">0</span>`)}</td>
+          <td>${km ? fmtKm(km) + " км" : "—"}</td></tr>`;
+      });
+      h += `</table>`;
+    }
+    $("buyerResult").innerHTML = h || `<div class="muted">Машина не отдала данные для проверки.</div>`;
+    renderOdoPanel(b.ecus);
+    if (isDoip()) $("odoPanel").style.display = "none";   // поиск пробега — только для OBD-II
+    toast("Проверка готова. Сохранено: reports/" + j.saved, "ok");
+  } catch (e) { toast(e.message, "err"); }
+  setBusy(btn);
+}
+
+// ---------- поиск пробега ----------
+let lastEcus = [];
+function renderOdoPanel(ecus) {
+  lastEcus = ecus || [];
+  $("odoPanel").style.display = lastEcus.length ? "" : "none";
+  $("odoEcus").innerHTML = lastEcus.map((e, i) => `<label class="lamp" style="margin:0;color:var(--text);cursor:pointer">
+    <input type="checkbox" value="${esc(e.req)}" ${i < 2 || /панел|IC|cluster|meter/i.test(e.name) ? "checked" : ""}> ${esc(e.name)}</label>`).join("");
+}
+async function odoSearch() {
+  const ecus = [...document.querySelectorAll("#odoEcus input:checked")].map(x => x.value);
+  if (!ecus.length) return toast("Выберите хотя бы один блок", "err");
+  $("liveAuto").checked = false; toggleLive();
+  const btn = $("btnOdo"); setBusy(btn, `Ищу... (~${ecus.length} мин)`);
+  try {
+    const j = await call("/api/odo_search", {km: $("odoKm").value, ecus});
+    window._odoMatches = j.matches;
+    let h = j.small_km ? `<div style="color:var(--warn);margin:8px 0">Пробег маленький — случайные совпадения вероятны. Надёжнее проверять на машине с пробегом от 1000 км.</div>` : "";
+    if (!j.matches.length) h += `<div class="muted" style="margin-top:8px">Не найдено. Попробуйте другие блоки (особенно приборную панель) или проверьте введённый пробег.</div>`;
+    else {
+      h += `<div class="muted" style="margin:8px 0">Найдено вариантов: ${j.total}. Лучший — первый. Нажмите «Запомнить» у правильного: дальше пробег будет читаться сам.</div><table>
+        <tr><th>Блок</th><th>Ячейка (DID)</th><th>Значение</th><th>Формат</th><th></th></tr>`;
+      j.matches.slice(0, 15).forEach((m, i) => h += `<tr><td>${esc(m.ecu_name)}</td><td class="code" style="font-size:13px">${esc(m.did)}</td>
+        <td><b>${fmtKm(m.km)} км</b><div class="hint" style="font-family:Consolas">${esc(m.raw)}</div></td>
+        <td class="hint">${m.width} байта, ${m.endian === "big" ? "прямой" : "обратный"} порядок${m.scale > 1 ? ", ÷" + m.scale : ""}, смещение ${m.offset}</td>
+        <td><button onclick="odoSave(${i})">Запомнить</button></td></tr>`);
+      h += `</table>`;
+    }
+    $("odoResult").innerHTML = h;
+  } catch (e) { toast(e.message, "err"); }
+  setBusy(btn);
+}
+async function odoSave(i) {
+  try {
+    const j = await call("/api/odo_save", window._odoMatches[i]);
+    toast(`Запомнил: для ${j.make} пробег в блоке ${j.saved.ecu}, ячейка ${j.saved.did}. Следующая проверка покажет его сама.`, "ok");
+  } catch (e) { toast(e.message, "err"); }
+}
+
+function renderArp(arp) {
+  if (!arp || !arp.length) return "";
+  const near = arp.filter(n => !n.ip.endsWith(".255") && !n.ip.endsWith(".0") && !n.mac.startsWith("ff-") && !n.mac.startsWith("01-00-5e") && !n.mac.startsWith("33-33"));
+  let h = `<h3 style="font-size:14px;margin:14px 0 6px">Кто на кабеле (ARP)</h3><table><tr><th>IP</th><th>MAC</th><th>Тип</th></tr>`;
+  (near.length ? near : arp).forEach(n => {
+    const ll = n.ip.startsWith("169.254");
+    h += `<tr><td class="code" style="${ll ? "color:var(--ok)" : ""}">${esc(n.ip)}</td><td style="font-size:12px">${esc(n.mac)}</td><td class="muted">${esc(n.type)}</td></tr>`;
+  });
+  h += `</table><div class="hint">Адреса 169.254.x (зелёные), кроме вашего — вероятно, машина. Если таких нет, кабель не видит ни одного устройства: проверьте Ready и сам кабель.</div>`;
+  return h;
+}
+function renderNet(net) {
+  if (!net || !net.adapters || !net.adapters.length) return "";
+  let h = `<h3 style="font-size:14px;margin:14px 0 6px">Сетевые адаптеры</h3><table><tr><th>Адаптер</th><th>Описание</th><th>IPv4</th></tr>`;
+  net.adapters.forEach(a => {
+    const isAsix = /asix|ax887/i.test(a.desc);
+    const ipTxt = a.ipv4.length ? a.ipv4.map(ip => ip.startsWith("169.254") ? `<span style="color:var(--warn)">${esc(ip)} (нет IP от машины)</span>` : `<span style="color:var(--ok)">${esc(ip)}</span>`).join(", ") : "—";
+    h += `<tr${isAsix ? ' style="font-weight:600"' : ""}><td>${esc(a.title)}${isAsix ? " ⭐" : ""}</td><td style="font-size:12.5px">${esc(a.desc || "—")}</td><td>${ipTxt}</td></tr>`;
+  });
+  h += `</table>`;
+  const asix = net.adapters.find(a => /asix|ax887/i.test(a.desc));
+  if (asix) {
+    const st = [];
+    st.push("линк по кабелю: " + (asix.media_off ? "<b style='color:var(--bad)'>НЕТ (среда недоступна)</b>" : "<b style='color:var(--ok)'>есть</b>"));
+    if (asix.dhcp) st.push("DHCP: " + esc(asix.dhcp));
+    if (asix.dhcp_server) st.push("DHCP-сервер: " + esc(asix.dhcp_server));
+    h += `<div class="muted" style="margin-top:6px">ASIX — ${st.join(" · ")}</div>`;
+    if (asix.media_off)
+      h += `<div style="color:var(--bad);margin-top:6px">Линка по кабелю нет — машина не подняла Ethernet. Почти наверняка не подаётся сигнал активации DoIP (пин 8) или кабель не для Li. Нужен активный DoIP-кабель именно под Li и машина в Ready.</div>`;
+    else if (asix.apipa || !asix.ipv4.length)
+      h += `<div style="color:var(--warn);margin-top:6px">Линк есть, но машина не выдала IP и не отвечает по аварийному адресу (169.254). Обычно это значит, что диагностическая сеть не активирована (та же линия активации) либо нужен статический IP в подсети машины. Пришлите экран — подскажу статический IP для пробы.</div>`;
+    else
+      h += `<div style="color:var(--ok);margin-top:6px">У ASIX есть IP ${esc(asix.ipv4[0])} — сеть в порядке. Если DoIP молчит, дело в активации/адресах блоков.</div>`;
+  }
+  return h;
+}
+async function netCheck() {
+  const btn = $("btnNet"); setBusy(btn, "Смотрю сеть...");
+  try {
+    const net = (await call("/api/network")).network;
+    $("doipResult").innerHTML = renderNet(net) || `<div class="muted">Адаптеры не найдены.</div>`;
+  } catch (e) { toast(e.message, "err"); }
+  setBusy(btn);
+}
+// ---------- DoIP (Ethernet) ----------
+async function autoIp() {
+  const btn = $("btnAutoIp"); setBusy(btn, "Прописываю IP и сканирую...");
+  try {
+    const r = await call("/api/doip_setip", {ip: $("ipManual").value.trim()});
+    if (!r.setip.ok) { toast("Не удалось задать IP: " + (r.setip.error || ""), "err"); setBusy(btn); return; }
+    if (r.doip) { renderDoip(r.doip); toast(r.doip.ok ? "DoIP: шлюз найден!" : "IP задан, но: " + (r.doip.error || ""), r.doip.ok ? "ok" : "err"); }
+    else toast("IP задан. Нажмите «Только сканировать».", "ok");
+  } catch (e) { toast(e.message, "err"); }
+  setBusy(btn);
+}
+async function setDhcp() {
+  const btn = $("btnDhcp"); setBusy(btn, "Возвращаю авто-IP...");
+  try { const r = await call("/api/doip_setip", {dhcp: true}); toast(r.result && r.result.ok ? "Адаптер вернулся на авто-IP (DHCP)" : "Не вышло", r.result && r.result.ok ? "ok" : "err"); }
+  catch (e) { toast(e.message, "err"); }
+  setBusy(btn);
+}
+async function doipManual() {
+  const btn = $("btnDoipManual"); setBusy(btn, "Сканирую подсеть... (10–20 с)");
+  try {
+    const d = (await call("/api/doip_manual", {deep:false})).doip;
+    renderDoip(d);
+    toast(d.ok ? "DoIP: шлюз найден" : "DoIP: " + (d.error || "не найдено"), d.ok ? "ok" : "err");
+  } catch (e) { toast(e.message, "err"); }
+  setBusy(btn);
+}
+async function doipScan(deep) {
+  const btn = deep ? $("btnDoipDeep") : $("btnDoipFind");
+  setBusy(btn, deep ? "Перебираю блоки... (до минуты)" : "Ищу машину...");
+  try {
+    const d = (await call("/api/doip", {deep, timeout: 3})).doip;
+    renderDoip(d);
+    if (d.ok) {
+      ["btnLive", "liveAuto", "btnBuyer", "btnBuyerFull", "btnDoipLive", "btnDoipClear"].forEach(id => { if ($(id)) $(id).disabled = false; });
+      $("statusBadge").textContent = "Подключено · DoIP"; $("statusBadge").className = "glass on";
+      $("scanResult").innerHTML = `<div class="muted">Ошибки по DoIP показаны ниже, в разделе «DoIP (Ethernet)». Живые данные и «Проверка при покупке» теперь работают по DoIP.</div>`;
+    }
+    toast(d.ok ? "DoIP: машина найдена, можно читать живые данные и делать проверку" : "DoIP: " + (d.error || "нет связи"), d.ok ? "ok" : "err");
+  } catch (e) { toast(e.message, "err"); }
+  setBusy(btn);
+}
+async function doipClear() {
+  if (!confirm("Стереть ошибки в блоках машины по DoIP?\nДвигатель должен быть заглушен, зажигание включено. Некоторые блоки требуют заводской авторизации и могут не стереться.")) return;
+  const btn = $("btnDoipClear");
+  setBusy(btn, "Стираю...");
+  try {
+    const r = (await call("/api/doip_clear", {})).clear;
+    let h = "";
+    if (r.ok) h += `<div style="color:var(--ok);font-weight:600;margin-bottom:6px">✔ Стирание выполнено</div>`;
+    else h += `<div style="color:var(--warn);font-weight:600;margin-bottom:6px">Стереть удалось не везде</div>`;
+    if (r.cleared && r.cleared.length) {
+      h += `<table><tr><th>Блок</th><th>Результат</th></tr>`;
+      r.cleared.forEach(c => h += `<tr><td class="code">${esc(c.addr)}</td><td><span class="sev ${c.ok ? "low" : "high"}">${c.ok ? "очищено ✔" : esc(c.reason || "не очищено")}</span></td></tr>`);
+      h += `</table>`;
+    }
+    if (r.error) h += `<div style="color:var(--bad);margin-top:6px">${esc(r.error)}</div>`;
+    h += `<div class="muted" style="margin-top:6px">Проверьте результат кнопкой «Найти машину по DoIP» ещё раз — ошибки «в памяти» должны пропасть.</div>`;
+    $("doipLiveResult").innerHTML = h;
+    toast(r.ok ? "DoIP: ошибки стёрты" : "DoIP: стёрлось не всё", r.ok ? "ok" : "err");
+  } catch (e) { toast(e.message, "err"); }
+  setBusy(btn);
+}
+async function doipLive() {
+  const btn = $("btnDoipLive");
+  setBusy(btn, "Читаю показания...");
+  try {
+    const r = (await call("/api/doip_live", {})).live;
+    let h = "";
+    if (!r.ok) {
+      h = `<div style="color:var(--warn)">${esc(r.error || r.note || "Нет данных")}</div>`;
+    } else {
+      h += `<div style="color:var(--ok);font-weight:600;margin-bottom:6px">📟 Живые показания по DoIP</div>`;
+      if (r.rows && r.rows.length) {
+        h += `<table><tr><th>Параметр</th><th>Значение</th></tr>`;
+        r.rows.forEach(x => h += `<tr><td>${esc(x.name)}</td><td class="code">${esc(x.value)} ${esc(x.unit || "")}</td></tr>`);
+        h += `</table>`;
+      }
+      if (r.dids && r.dids.length) {
+        h += `<h3 style="font-size:14px;margin:12px 0 6px">Идентификаторы блока</h3><table><tr><th>Поле</th><th>Значение</th></tr>`;
+        r.dids.forEach(x => h += `<tr><td>${esc(x.label)}</td><td class="code">${esc(x.value)}</td></tr>`);
+        h += `</table>`;
+      }
+      if (r.note) h += `<div class="muted" style="margin-top:6px">${esc(r.note)}</div>`;
+    }
+    $("doipLiveResult").innerHTML = h;
+    toast(r.ok ? "DoIP: показания получены" : "DoIP: живых данных нет", r.ok ? "ok" : "err");
+  } catch (e) { toast(e.message, "err"); }
+  setBusy(btn);
+}
+function renderDoip(d) {
+    let h = "";
+    if (!d.ok) {
+      h = `<div style="color:var(--bad);margin-bottom:8px">${esc(d.error || "Не удалось")}</div>`;
+      if (d.ips && d.ips.length) h += `<div class="muted">IP этого ПК: ${d.ips.map(esc).join(", ")}</div>`;
+      h += renderNet(d.network);
+      h += renderArp(d.arp);
+    } else {
+      const c = d.car || {};
+      h += `<div style="color:var(--ok);font-weight:600;margin-bottom:6px">✔ Машина найдена по DoIP</div>`;
+      h += `<div class="kv"><div>IP машины</div><div>${esc(c.ip)}</div>
+        <div>Адрес шлюза</div><div class="code">${esc(c.logical_address ? "0x" + c.logical_address.toString(16).toUpperCase() : "—")}</div>
+        <div>VIN (анонс)</div><div class="code">${esc(c.vin || d.vin || "—")}</div>
+        ${d.part_number ? `<div>Номер</div><div>${esc(d.part_number)}</div>` : ""}</div>`;
+      if (d.block_dtcs && d.block_dtcs.length) {
+        const act = d.block_dtcs.filter(x => x.active).length;
+        h += `<h3 style="font-size:14px;margin:14px 0 6px">Ошибки по блокам (${d.block_dtcs.length}${act ? `, активных ${act}` : ""})</h3>
+          <table><tr><th>Код</th><th>Блок</th><th>Расшифровка</th><th>Статус</th></tr>`;
+        d.block_dtcs.forEach(x => h += `<tr><td class="code">${esc(x.full)}</td><td style="font-size:13px">${esc(x.ecu)}</td>
+          <td>${esc(x.description)}</td><td><span class="sev ${x.active ? "high" : (x.stored ? "medium" : "low")}">${esc(x.status)}</span></td></tr>`);
+        h += `</table>`;
+      } else {
+        h += `<div class="muted" style="margin-top:10px">Блоки отозвались: ${d.ecus ? d.ecus.length : 0}. Ошибок не найдено или адреса блоков не угаданы — пришлите журнал, добавлю адреса этой машины.</div>`;
+      }
+      if (d.ecus && d.ecus.length) {
+        h += `<h3 style="font-size:14px;margin:14px 0 6px">Отозвавшиеся блоки (${d.ecus.length})</h3><table><tr><th>Адрес</th><th>VIN</th><th>Ошибок</th></tr>`;
+        d.ecus.forEach(e => h += `<tr><td class="code">${esc(e.addr)}</td><td class="code" style="font-size:13px">${esc(e.vin || "—")}</td><td>${e.dtc_count}</td></tr>`);
+        h += `</table>`;
+      }
+    }
+    $("doipResult").innerHTML = h;
+}
+
+// ---------- поиск адаптера ----------
+let usbBaseline = null;
+async function usbBase() {
+  try {
+    const j = await call("/api/usb");
+    usbBaseline = new Set(j.usb.devices.map(d => d.instance_id));
+    toast(`Запомнено устройств: ${usbBaseline.size}. Теперь вставьте адаптер и нажмите «Найти адаптер».`, "ok");
+  } catch (e) { toast(e.message, "err"); }
+}
+async function usbScan() {
+  const btn = $("btnUsb"); setBusy(btn, "Ищу...");
+  try {
+    const j = await call("/api/usb"), u = j.usb;
+    const color = {ok:"var(--ok)", driver:"var(--warn)", none:"var(--bad)"}[u.level];
+    let h = `<div style="color:${color};font-weight:600;margin-bottom:8px">${esc(u.verdict)}</div>`;
+    const links = [...new Map(u.devices.filter(d => d.driver_url).map(d => [d.driver_url, d])).values()];
+    links.forEach(d => h += `<div style="margin-bottom:6px">⬇ Драйвер ${esc(d.driver)}: <a href="${esc(d.driver_url)}" target="_blank" style="color:var(--blue)">${esc(d.driver_url)}</a></div>`);
+    if (u.devices.length) {
+      h += `<div class="muted" style="margin:6px 0 4px">USB-устройства сейчас (без системных: ${u.system_count}):</div>`;
+      h += u.devices.map(d => {
+        const isNew = usbBaseline && !usbBaseline.has(d.instance_id);
+        const mark = d.problem ? "⚠" : d.com ? "✔" : "•";
+        return `<div style="font-size:13px;padding:4px 0;border-bottom:1px solid var(--line);${d.candidate ? "color:var(--text)" : "color:var(--muted)"}">
+          ${isNew ? "🆕 " : ""}${mark} ${esc(d.name)}${d.com ? ` <b>${esc(d.com)}</b>` : ""}
+          <div class="hint">${d.chip ? "Чип: " + esc(d.chip) + " · " : ""}VID ${esc(d.vid || "?")} PID ${esc(d.pid || "?")} · ${esc(d.status)}${d.class ? " · " + esc(d.class) : ""}</div></div>`;
+      }).join("");
+    }
+    if (u.past.length) h += `<div class="muted" style="margin-top:6px">Раньше подключались: ${u.past.map(d => esc(d.name)).join("; ")}</div>`;
+    $("usbResult").innerHTML = h;
+    if (j.ports) $("port").innerHTML = j.ports.length
+      ? j.ports.map(p => `<option value="${esc(p.device)}">${esc(p.device)} — ${esc(p.description)}</option>`).join("")
+      : `<option value="">Порты не найдены (вставьте адаптер / включите демо)</option>`;
+  } catch (e) { toast(e.message, "err"); }
+  setBusy(btn);
+}
+
+// ---------- прожиг DPF ----------
+let dpfTimer = null, dpfT0 = null, dpfHotSince = null;
+function fmtTime(s) { s = Math.round(s); return `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`; }
+async function dpfStart() {
+  $("liveAuto").checked = false; toggleLive();
+  dpfT0 = Date.now(); dpfHotSince = null;
+  $("dpfBtn").style.display = "none"; $("dpfStopBtn").style.display = "";
+  dpfLoop();
+}
+function dpfStop() {
+  clearTimeout(dpfTimer); dpfTimer = null;
+  $("dpfBtn").style.display = ""; $("dpfStopBtn").style.display = "none";
+}
+async function dpfLoop() {
+  if ($("dpfStopBtn").style.display === "none") return;
+  if (!busy) {
+    try {
+      const d = (await call("/api/dpf")).dpf, v = d.values;
+      $("dpfChecks").innerHTML = d.checks.map(c =>
+        `<div class="chk"><span class="${c.ok?"ok":"no"}">${c.ok?"✔":"✖"}</span><span>${esc(c.name)}</span><span class="muted">${esc(c.value)}</span></div>`).join("")
+        + `<div style="margin-top:6px;font-weight:600;color:${d.ready?"var(--ok)":"var(--warn)"}">`
+        + (d.ready ? "Условия выполнены — можно нажимать кнопку DPD." : "Ждём, пока все условия станут зелёными.") + "</div>";
+      if (d.regen_likely && !dpfHotSince) dpfHotSince = Date.now();
+      const tiles = [["Наблюдение идёт", fmtTime((Date.now()-dpfT0)/1000), ""]];
+      if (dpfHotSince) tiles.push(["Прожиг (горячий выхлоп)", fmtTime((Date.now()-dpfHotSince)/1000), ""]);
+      tiles.push(["Обороты", v.rpm ?? "—", "об/мин"], ["Температура ОЖ", v.coolant ?? "—", "°C"]);
+      v.egt.forEach((t,i) => tiles.push([`Температура выхлопа ${i+1}`, t, "°C"]));
+      if (v.dpf_in != null) tiles.push(["Температура на входе DPF", v.dpf_in, "°C"]);
+      if (v.dpf_out != null) tiles.push(["Температура на выходе DPF", v.dpf_out, "°C"]);
+      if (v.dpf_dp != null) tiles.push(["Перепад давления на DPF", v.dpf_dp, "кПа"]);
+      let h = tiles.map(([n,val,u]) => `<div class="tile"><div class="n">${esc(n)}</div><div><span class="v">${esc(val)}</span><span class="u">${esc(u)}</span></div></div>`).join("");
+      if (d.max_temp == null) h += `<div class="muted" style="grid-column:1/-1">Машина не отдаёт температуру выхлопа по OBD — следите за лампой DPD и оборотами.</div>`;
+      else if (d.regen_likely) h += `<div style="grid-column:1/-1;color:var(--ok)">🔥 Похоже, прожиг идёт (выхлоп ≥ 450 °C). Не глушите двигатель.</div>`;
+      $("dpfLive").innerHTML = h;
+    } catch (e) { toast(e.message, "err"); dpfStop(); return; }
+  }
+  dpfTimer = setTimeout(dpfLoop, 2000);
+}
+
+async function sendRaw() {
+  const cmd = $("rawCmd").value.trim(); if (!cmd) return;
+  try { await call("/api/raw", {cmd}); $("rawCmd").value = ""; } catch (e) { toast(e.message, "err"); }
+}
+let logLen = -1;
+async function pollLog() {
+  try {
+    const j = await call("/api/log");
+    const sig = j.log.length + (j.log.at(-1)?.t || "") + (j.log.at(-1)?.text || "");
+    if (sig !== logLen) {
+      logLen = sig;
+      const el = $("log"), atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 30;
+      el.innerHTML = j.log.map(l => `<div class="${l.kind}">${l.t} ${l.kind==="tx"?"→":l.kind==="rx"?"←":"•"} ${esc(l.text)}</div>`).join("");
+      if (atBottom) el.scrollTop = el.scrollHeight;
+    }
+  } catch (e) {}
+  setTimeout(pollLog, 1000);
+}
+
+// ---------- KPI, PDF, настройки отчёта, меню ----------
+function setKpi(id, value, desc, color) {
+  $(id).textContent = value; $(id).style.color = color || "";
+  if (desc !== undefined) $(id + "D").textContent = desc;
+}
+function openPdf() { window.open("/api/report.pdf", "_blank"); }
+async function loadBrand() {
+  try { const b = (await call("/api/branding")).branding; $("navBrand").textContent = b.brand; return b; } catch (e) { return {}; }
+}
+async function openBrand() {
+  const b = await loadBrand();
+  ["brand","site","city","phone","inspector"].forEach(k => $("b_" + k).value = b[k] || "");
+  $("brandModal").style.display = "flex";
+}
+async function saveBrand() {
+  const body = {}; ["brand","site","city","phone","inspector"].forEach(k => body[k] = $("b_" + k).value);
+  try { await call("/api/branding", body); $("brandModal").style.display = "none"; await loadBrand(); toast("Настройки отчёта сохранены", "ok"); }
+  catch (e) { toast(e.message, "err"); }
+}
+function navSpy() {
+  const links = [...document.querySelectorAll("#nav a[href^='#']")].filter(a => a.getAttribute("href").length > 1);
+  const obs = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    links.forEach(a => a.classList.toggle("active", a.getAttribute("href") === "#" + e.target.id));
+  }), {rootMargin: "-30% 0px -60% 0px"});
+  links.forEach(a => { const t = document.querySelector(a.getAttribute("href")); if (t) obs.observe(t); });
+}
+
+(async () => {
+  await loadPorts(); await loadVehicle(); await loadBrand(); navSpy(); pollLog();
+  try { const s = (await call("/api/status")).status; if (s.connected) setConnected(true, s); } catch (e) {}
+})();
+</script>
+</body>
+</html>

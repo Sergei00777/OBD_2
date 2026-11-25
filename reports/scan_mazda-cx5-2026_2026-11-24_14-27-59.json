@@ -1,0 +1,36 @@
+{
+  "time": "2026-11-24T14:27:59.765701",
+  "vin": "LVRHDCAC0TN610204",
+  "vehicle": {
+    "id": "mazda-cx5-2026",
+    "make": "Mazda",
+    "model": "CX-5",
+    "year": 2026,
+    "vin": "LVRHDCAC0TN610204",
+    "manufacturer": "Changan Mazda (Китай)",
+    "engine": "бензин (уточнить: 2.0 / 2.5 Skyactiv-G)",
+    "fuel": "бензин",
+    "voltage": "12",
+    "protocol": "obd",
+    "notes": "Китайская сборка Changan Mazda. Стандартный OBD-II CAN 11 бит 500 кбит/с — подходит любой ELM327."
+  },
+  "protocol": "ISO 15765-4 CAN 11 бит 500 кбит/с",
+  "demo": false,
+  "mode": "obd",
+  "codes": [
+    {
+      "code": "P0685",
+      "type": "Постоянная",
+      "ecu": "Двигатель (ECM)",
+      "description": "Главное реле питания ЭБУ — обрыв цепи управления",
+      "system": "Питание ЭБУ (главное реле)",
+      "severity": "medium",
+      "hint": "Реле питания ЭБУ, его предохранитель и проводка. Часто появляется после отключения/разряда АКБ или «прикуривания». Проверьте клеммы АКБ и напряжение (≥12,4 В заглушенным)."
+    }
+  ],
+  "mil": false,
+  "mil_count": 0,
+  "lamps": {
+    "Check Engine (MIL)": false
+  }
+}

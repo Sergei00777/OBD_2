@@ -1,0 +1,170 @@
+{
+  "time": "2026-11-25T14:50:44.249739",
+  "vehicle": {
+    "id": "range-rover-evoque",
+    "make": "Land Rover",
+    "model": "Range Rover Evoque P250 Dynamic SE",
+    "year": 2024,
+    "vin": "L2CGA2B17RG619105",
+    "manufacturer": "Chery Jaguar Land Rover (Китай) / Land Rover",
+    "engine": "P250 — бензин 2.0 Ingenium turbo, ~249 л.с., AWD, АКПП 9АТ",
+    "fuel": "бензин",
+    "voltage": "12",
+    "protocol": "doip",
+    "notes": "Поколение L551. Читается по DoIP (Ethernet) — кабель OBD→RJ45→USB (ASIX). Используйте раздел «DoIP (Ethernet)». Шлюз JLR; глубокие блоки могут требовать заводской авторизации."
+  },
+  "doip": true,
+  "readiness": {
+    "monitors": [],
+    "diesel": null,
+    "mil": null,
+    "dtc_count": null
+  },
+  "odometers": [],
+  "ecus": [
+    {
+      "name": "Блок 0x1716",
+      "vin": "L2CGA2B17RG619105",
+      "dtc_count": 9,
+      "part_number": "",
+      "software": "",
+      "serial": "",
+      "req": "0x1716"
+    }
+  ],
+  "warnings": [
+    "Активные ошибки в блоках: 1 шт. — см. «Ошибки по блокам»."
+  ],
+  "notes": [
+    "Пробег по стандартному OBD (PID A6) шлюз не отдал. У JLR пробег хранится в приборной панели за шлюзом — сделайте «Глубокий перебор блоков», найдём адрес."
+  ],
+  "block_dtcs": [
+    {
+      "code": "U0300",
+      "full": "U0300-46",
+      "status": "разовая",
+      "status_byte": 80,
+      "active": false,
+      "stored": false,
+      "warn": false,
+      "description": "Общий код SAE, система: Сеть связи между блоками (CAN). Нет в локальной базе — пришлите код, добавлю расшифровку.",
+      "system": "Сеть связи между блоками (CAN)",
+      "severity": "medium",
+      "hint": "",
+      "ecu": "Блок 0x1716"
+    },
+    {
+      "code": "U1A14",
+      "full": "U1A14",
+      "status": "разовая",
+      "status_byte": 80,
+      "active": false,
+      "stored": false,
+      "warn": false,
+      "description": "Код производителя (Сеть связи между блоками (CAN)). Точную расшифровку смотрите в сервисной документации Land Rover по этому коду.",
+      "system": "Сеть связи между блоками (CAN)",
+      "severity": "medium",
+      "hint": "",
+      "ecu": "Блок 0x1716"
+    },
+    {
+      "code": "U3000",
+      "full": "U3000-04",
+      "status": "разовая",
+      "status_byte": 80,
+      "active": false,
+      "stored": false,
+      "warn": false,
+      "description": "Общий код SAE, система: Сеть связи между блоками (CAN). Нет в локальной базе — пришлите код, добавлю расшифровку.",
+      "system": "Сеть связи между блоками (CAN)",
+      "severity": "medium",
+      "hint": "",
+      "ecu": "Блок 0x1716"
+    },
+    {
+      "code": "U0028",
+      "full": "U0028-81",
+      "status": "разовая",
+      "status_byte": 80,
+      "active": false,
+      "stored": false,
+      "warn": false,
+      "description": "Общий код SAE, система: Сеть связи между блоками (CAN). Нет в локальной базе — пришлите код, добавлю расшифровку.",
+      "system": "Сеть связи между блоками (CAN)",
+      "severity": "medium",
+      "hint": "",
+      "ecu": "Блок 0x1716"
+    },
+    {
+      "code": "U0028",
+      "full": "U0028-87",
+      "status": "разовая",
+      "status_byte": 80,
+      "active": false,
+      "stored": false,
+      "warn": false,
+      "description": "Общий код SAE, система: Сеть связи между блоками (CAN). Нет в локальной базе — пришлите код, добавлю расшифровку.",
+      "system": "Сеть связи между блоками (CAN)",
+      "severity": "medium",
+      "hint": "",
+      "ecu": "Блок 0x1716"
+    },
+    {
+      "code": "U0037",
+      "full": "U0037-87",
+      "status": "разовая",
+      "status_byte": 80,
+      "active": false,
+      "stored": false,
+      "warn": false,
+      "description": "Общий код SAE, система: Сеть связи между блоками (CAN). Нет в локальной базе — пришлите код, добавлю расшифровку.",
+      "system": "Сеть связи между блоками (CAN)",
+      "severity": "medium",
+      "hint": "",
+      "ecu": "Блок 0x1716"
+    },
+    {
+      "code": "U2038",
+      "full": "U2038",
+      "status": "разовая",
+      "status_byte": 80,
+      "active": false,
+      "stored": false,
+      "warn": false,
+      "description": "Код производителя (Сеть связи между блоками (CAN)). Точную расшифровку смотрите в сервисной документации Land Rover по этому коду.",
+      "system": "Сеть связи между блоками (CAN)",
+      "severity": "medium",
+      "hint": "",
+      "ecu": "Блок 0x1716"
+    },
+    {
+      "code": "U2039",
+      "full": "U2039",
+      "status": "разовая",
+      "status_byte": 80,
+      "active": false,
+      "stored": false,
+      "warn": false,
+      "description": "Код производителя (Сеть связи между блоками (CAN)). Точную расшифровку смотрите в сервисной документации Land Rover по этому коду.",
+      "system": "Сеть связи между блоками (CAN)",
+      "severity": "medium",
+      "hint": "",
+      "ecu": "Блок 0x1716"
+    },
+    {
+      "code": "B164D",
+      "full": "B164D-92",
+      "status": "активная, горит значок",
+      "status_byte": 175,
+      "active": true,
+      "stored": true,
+      "warn": true,
+      "description": "Код производителя (Кузов (подушки, свет, комфорт)). Точную расшифровку смотрите в сервисной документации Land Rover по этому коду.",
+      "system": "Кузов (подушки, свет, комфорт)",
+      "severity": "high",
+      "hint": "",
+      "ecu": "Блок 0x1716"
+    }
+  ],
+  "odometer_groups": []
+}

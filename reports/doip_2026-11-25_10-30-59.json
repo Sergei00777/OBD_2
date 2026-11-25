@@ -1,0 +1,251 @@
+{
+  "time": "2026-11-25T10:30:59.264684",
+  "ok": true,
+  "car": {
+    "ip": "169.254.197.5",
+    "logical_address": 5910,
+    "vin": "L2CGA2B17RG619105",
+    "eid": "481693E694DF",
+    "via": "192.168.1.2"
+  },
+  "ecus": [
+    {
+      "addr": "0x1716",
+      "name": "Блок 0x1716",
+      "vin": "L2CGA2B17RG619105",
+      "dtc_count": 9
+    }
+  ],
+  "block_dtcs": [
+    {
+      "code": "U0300",
+      "full": "U0300-46",
+      "status": "разовая",
+      "status_byte": 80,
+      "active": false,
+      "stored": false,
+      "warn": false,
+      "description": "Общий код SAE, система: Сеть связи между блоками (CAN). Нет в локальной базе — пришлите код, добавлю расшифровку.",
+      "system": "Сеть связи между блоками (CAN)",
+      "severity": "medium",
+      "hint": "",
+      "ecu": "Блок 0x1716"
+    },
+    {
+      "code": "U1A14",
+      "full": "U1A14",
+      "status": "разовая",
+      "status_byte": 80,
+      "active": false,
+      "stored": false,
+      "warn": false,
+      "description": "Код производителя (Сеть связи между блоками (CAN)). Точную расшифровку смотрите в сервисной документации Isuzu по этому коду.",
+      "system": "Сеть связи между блоками (CAN)",
+      "severity": "medium",
+      "hint": "",
+      "ecu": "Блок 0x1716"
+    },
+    {
+      "code": "U3000",
+      "full": "U3000-04",
+      "status": "разовая",
+      "status_byte": 80,
+      "active": false,
+      "stored": false,
+      "warn": false,
+      "description": "Общий код SAE, система: Сеть связи между блоками (CAN). Нет в локальной базе — пришлите код, добавлю расшифровку.",
+      "system": "Сеть связи между блоками (CAN)",
+      "severity": "medium",
+      "hint": "",
+      "ecu": "Блок 0x1716"
+    },
+    {
+      "code": "U0028",
+      "full": "U0028-81",
+      "status": "разовая",
+      "status_byte": 80,
+      "active": false,
+      "stored": false,
+      "warn": false,
+      "description": "Общий код SAE, система: Сеть связи между блоками (CAN). Нет в локальной базе — пришлите код, добавлю расшифровку.",
+      "system": "Сеть связи между блоками (CAN)",
+      "severity": "medium",
+      "hint": "",
+      "ecu": "Блок 0x1716"
+    },
+    {
+      "code": "U0028",
+      "full": "U0028-87",
+      "status": "разовая",
+      "status_byte": 80,
+      "active": false,
+      "stored": false,
+      "warn": false,
+      "description": "Общий код SAE, система: Сеть связи между блоками (CAN). Нет в локальной базе — пришлите код, добавлю расшифровку.",
+      "system": "Сеть связи между блоками (CAN)",
+      "severity": "medium",
+      "hint": "",
+      "ecu": "Блок 0x1716"
+    },
+    {
+      "code": "U0037",
+      "full": "U0037-87",
+      "status": "разовая",
+      "status_byte": 80,
+      "active": false,
+      "stored": false,
+      "warn": false,
+      "description": "Общий код SAE, система: Сеть связи между блоками (CAN). Нет в локальной базе — пришлите код, добавлю расшифровку.",
+      "system": "Сеть связи между блоками (CAN)",
+      "severity": "medium",
+      "hint": "",
+      "ecu": "Блок 0x1716"
+    },
+    {
+      "code": "U2038",
+      "full": "U2038",
+      "status": "разовая",
+      "status_byte": 80,
+      "active": false,
+      "stored": false,
+      "warn": false,
+      "description": "Код производителя (Сеть связи между блоками (CAN)). Точную расшифровку смотрите в сервисной документации Isuzu по этому коду.",
+      "system": "Сеть связи между блоками (CAN)",
+      "severity": "medium",
+      "hint": "",
+      "ecu": "Блок 0x1716"
+    },
+    {
+      "code": "U2039",
+      "full": "U2039",
+      "status": "разовая",
+      "status_byte": 80,
+      "active": false,
+      "stored": false,
+      "warn": false,
+      "description": "Код производителя (Сеть связи между блоками (CAN)). Точную расшифровку смотрите в сервисной документации Isuzu по этому коду.",
+      "system": "Сеть связи между блоками (CAN)",
+      "severity": "medium",
+      "hint": "",
+      "ecu": "Блок 0x1716"
+    },
+    {
+      "code": "B164D",
+      "full": "B164D-92",
+      "status": "в памяти",
+      "status_byte": 40,
+      "active": false,
+      "stored": true,
+      "warn": false,
+      "description": "Код производителя (Кузов (подушки, свет, комфорт)). Точную расшифровку смотрите в сервисной документации Isuzu по этому коду.",
+      "system": "Кузов (подушки, свет, комфорт)",
+      "severity": "medium",
+      "hint": "",
+      "ecu": "Блок 0x1716"
+    }
+  ],
+  "ips": [
+    "192.168.1.2"
+  ],
+  "network": {
+    "adapters": [
+      {
+        "title": "Адаптер беспроводной локальной сети Беспроводная сеть 4",
+        "desc": "Intel(R) Wi-Fi 7 BE201 320MHz #4",
+        "ipv4": [],
+        "apipa": false,
+        "media_off": true,
+        "dhcp": "нет",
+        "dhcp_server": ""
+      },
+      {
+        "title": "Адаптер беспроводной локальной сети Беспроводная сеть 5",
+        "desc": "Intel(R) Wi-Fi 7 BE201 320MHz #5",
+        "ipv4": [],
+        "apipa": false,
+        "media_off": true,
+        "dhcp": "да",
+        "dhcp_server": ""
+      },
+      {
+        "title": "Адаптер Ethernet Ethernet 4",
+        "desc": "ASIX AX88772C USB2.0 to Fast Ethernet Adapter",
+        "ipv4": [
+          "192.168.1.2"
+        ],
+        "apipa": false,
+        "media_off": false,
+        "dhcp": "нет",
+        "dhcp_server": ""
+      },
+      {
+        "title": "Адаптер беспроводной локальной сети Беспроводная сеть",
+        "desc": "Intel(R) Wi-Fi 7 BE201 320MHz",
+        "ipv4": [],
+        "apipa": false,
+        "media_off": true,
+        "dhcp": "да",
+        "dhcp_server": ""
+      },
+      {
+        "title": "Адаптер Ethernet Сетевое подключение Bluetooth",
+        "desc": "Bluetooth Device (Personal Area Network)",
+        "ipv4": [],
+        "apipa": false,
+        "media_off": true,
+        "dhcp": "да",
+        "dhcp_server": ""
+      }
+    ],
+    "asix": {
+      "title": "Адаптер Ethernet Ethernet 4",
+      "desc": "ASIX AX88772C USB2.0 to Fast Ethernet Adapter",
+      "ipv4": [
+        "192.168.1.2"
+      ],
+      "apipa": false,
+      "media_off": false,
+      "dhcp": "нет",
+      "dhcp_server": ""
+    }
+  },
+  "arp": [
+    {
+      "ip": "169.254.197.5",
+      "mac": "48-16-93-e6-94-df",
+      "type": "динамический"
+    },
+    {
+      "ip": "192.168.1.255",
+      "mac": "ff-ff-ff-ff-ff-ff",
+      "type": "статический"
+    },
+    {
+      "ip": "224.0.0.22",
+      "mac": "01-00-5e-00-00-16",
+      "type": "статический"
+    },
+    {
+      "ip": "224.0.0.251",
+      "mac": "01-00-5e-00-00-fb",
+      "type": "статический"
+    },
+    {
+      "ip": "224.0.0.252",
+      "mac": "01-00-5e-00-00-fc",
+      "type": "статический"
+    },
+    {
+      "ip": "239.255.255.250",
+      "mac": "01-00-5e-7f-ff-fa",
+      "type": "статический"
+    },
+    {
+      "ip": "255.255.255.255",
+      "mac": "ff-ff-ff-ff-ff-ff",
+      "type": "статический"
+    }
+  ],
+  "vin": "L2CGA2B17RG619105",
+  "serial": "001820"
+}

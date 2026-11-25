@@ -1,0 +1,89 @@
+{
+  "time": "2026-11-24T17:35:37.800294",
+  "vehicle": {
+    "vin": "",
+    "manufacturer": "Li Auto / Lixiang (Китай)",
+    "fuel": "гибрид",
+    "voltage": "12",
+    "protocol": "obd",
+    "id": "li-l9",
+    "make": "Li Auto",
+    "model": "Li L9",
+    "year": 2022,
+    "engine": "гибрид EREV: бензин 1.5 турбо (генератор); электромоторы, 4WD, 6 мест",
+    "notes": "Заготовка. Включить Ready. Читается двигатель-генератор по OBD-II; ВВБ/моторы — закрытые протоколы. Впишите VIN и год."
+  },
+  "demo": false,
+  "readiness": {
+    "monitors": [
+      {
+        "name": "Пропуски воспламенения",
+        "ready": true
+      },
+      {
+        "name": "Топливная система",
+        "ready": true
+      },
+      {
+        "name": "Компоненты",
+        "ready": true
+      },
+      {
+        "name": "Катализатор",
+        "ready": true
+      },
+      {
+        "name": "Система EVAP (пары топлива)",
+        "ready": true
+      },
+      {
+        "name": "Лямбда-зонды",
+        "ready": true
+      },
+      {
+        "name": "Подогрев лямбда-зондов",
+        "ready": true
+      },
+      {
+        "name": "EGR / VVT",
+        "ready": true
+      }
+    ],
+    "diesel": false,
+    "mil": false,
+    "dtc_count": 0,
+    "km_since_clear": 5802,
+    "warmups_since_clear": 140,
+    "km_with_mil": 0,
+    "min_with_mil": 0,
+    "obd_std": "код 41 (нет в таблице стандартов)"
+  },
+  "odometers": [
+    {
+      "source": "OBD-II стандарт (PID A6), блок двигателя",
+      "km": 57588
+    }
+  ],
+  "ecus": [
+    {
+      "req": "7E0",
+      "resp": "7E8",
+      "name": "Двигатель (7E0)",
+      "dtcs": [],
+      "dtc_count": 0
+    }
+  ],
+  "warnings": [],
+  "notes": [
+    "Явных признаков сброса ошибок, скрутки или чужих блоков не найдено."
+  ],
+  "block_dtcs": [],
+  "odometer_groups": [
+    {
+      "km": 57588,
+      "sources": [
+        "OBD-II стандарт (PID A6), блок двигателя"
+      ]
+    }
+  ]
+}

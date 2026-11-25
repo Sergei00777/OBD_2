@@ -1,0 +1,26 @@
+{
+  "time": "2026-11-24T15:26:17.551451",
+  "vin": "LW433B104M1021347",
+  "vehicle": {
+    "id": "li-one-2021",
+    "make": "Li Auto",
+    "model": "Li ONE",
+    "year": 2021,
+    "vin": "",
+    "manufacturer": "Li Auto (Китай)",
+    "engine": "гибрид EREV: бензин 1.2 турбо (генератор), 131 л.с.; АКПП, 4WD (электромоторы)",
+    "fuel": "гибрид",
+    "voltage": "12",
+    "protocol": "obd",
+    "notes": "Цвет серый. Включить режим Ready. Читается бензиновый двигатель-генератор по OBD-II; батарея/моторы — закрытые протоколы. VIN добавить."
+  },
+  "protocol": "ISO 15765-4 CAN 11 бит 500 кбит/с",
+  "demo": false,
+  "mode": "obd",
+  "codes": [],
+  "mil": false,
+  "mil_count": 0,
+  "lamps": {
+    "Check Engine (MIL)": false
+  }
+}

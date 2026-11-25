@@ -1,0 +1,26 @@
+{
+  "time": "2026-11-25T10:09:01.425455",
+  "vin": "HLX33B125R1714868",
+  "vehicle": {
+    "vin": "",
+    "manufacturer": "Li Auto / Lixiang (Китай)",
+    "fuel": "гибрид",
+    "voltage": "12",
+    "protocol": "obd",
+    "id": "li-l7",
+    "make": "Li Auto",
+    "model": "Li L7",
+    "year": 2023,
+    "engine": "гибрид EREV: бензин 1.5 турбо (генератор); электромоторы, 4WD, 5 мест",
+    "notes": "Заготовка. Включить Ready. Читается двигатель-генератор по OBD-II; ВВБ/моторы — закрытые протоколы. Впишите VIN и год."
+  },
+  "protocol": "ISO 15765-4 CAN 11 бит 500 кбит/с",
+  "demo": false,
+  "mode": "obd",
+  "codes": [],
+  "mil": false,
+  "mil_count": 0,
+  "lamps": {
+    "Check Engine (MIL)": false
+  }
+}

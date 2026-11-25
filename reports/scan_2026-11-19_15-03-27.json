@@ -1,0 +1,13 @@
+{
+  "time": "2026-11-19T15:03:27.181678",
+  "vin": "LWLDMFMGXRL048554",
+  "protocol": "ISO 15765-4 CAN 11 бит 500 кбит/с",
+  "demo": true,
+  "mode": "obd",
+  "codes": [],
+  "mil": false,
+  "mil_count": 0,
+  "lamps": {
+    "Check Engine (MIL)": false
+  }
+}

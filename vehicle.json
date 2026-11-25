@@ -1,0 +1,16 @@
+{
+  "vin": "LWLDMFMGXRL048554",
+  "make": "Isuzu",
+  "model": "Elf",
+  "series": "700P",
+  "year": 2024,
+  "manufacturer": "Qingling Isuzu (Китай)",
+  "vehicle_type": "Специализированный прочее",
+  "category": "N2 / C",
+  "emission_class": "Евро-5",
+  "color": "жёлтый",
+  "gvw_kg": 7550,
+  "curb_weight_kg": 4450,
+  "engine": "4HK1, дизель 5,19 л, турбо (вероятно)",
+  "electrical": "24 В (типично для 4HK1 — проверьте)"
+}

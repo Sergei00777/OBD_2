@@ -1,0 +1,26 @@
+{
+  "time": "2026-11-25T15:37:05.180816",
+  "vin": "LSVUJ6B27MN242337",
+  "vehicle": {
+    "id": "cx5-kf",
+    "make": "Mazda",
+    "model": "CX-5 (KF) 2017–н.в.",
+    "year": "",
+    "vin": "",
+    "manufacturer": "Mazda",
+    "engine": "Skyactiv-G 2.0 / 2.5 (вкл. Turbo) бензин; Skyactiv-D 2.2 дизель (рынки). Впишите по машине.",
+    "fuel": "бензин",
+    "voltage": "12",
+    "protocol": "obd",
+    "notes": "Поколение KF (2-е). OBD-II CAN — любой ELM327. Впишите VIN и год."
+  },
+  "protocol": "ISO 15765-4 CAN 11 бит 500 кбит/с",
+  "demo": false,
+  "mode": "obd",
+  "codes": [],
+  "mil": false,
+  "mil_count": 0,
+  "lamps": {
+    "Check Engine (MIL)": false
+  }
+}

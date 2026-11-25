@@ -1,0 +1,45 @@
+{
+  "time": "2026-11-24T13:03:49.789462",
+  "vin": "LVRHDCAC0TN610204",
+  "vehicle": {
+    "id": "mazda-cx5-2026",
+    "make": "Mazda",
+    "model": "CX-5",
+    "year": 2026,
+    "vin": "LVRHDCAC0TN610204",
+    "manufacturer": "Changan Mazda (Китай)",
+    "engine": "бензин (уточнить: 2.0 / 2.5 Skyactiv-G)",
+    "fuel": "бензин",
+    "voltage": "12",
+    "protocol": "obd",
+    "notes": "Китайская сборка Changan Mazda. Стандартный OBD-II CAN 11 бит 500 кбит/с — подходит любой ELM327."
+  },
+  "protocol": "ISO 15765-4 CAN 11 бит 500 кбит/с",
+  "demo": false,
+  "mode": "obd",
+  "codes": [
+    {
+      "code": "P0463",
+      "type": "Ожидающая (текущий цикл)",
+      "ecu": "Двигатель (ECM)",
+      "description": "Общий код SAE, система: Экология: EGR, сажевый фильтр, нейтрализатор. Нет в локальной базе — пришлите код, добавлю расшифровку.",
+      "system": "Экология: EGR, сажевый фильтр, нейтрализатор",
+      "severity": "medium",
+      "hint": ""
+    },
+    {
+      "code": "P0685",
+      "type": "Постоянная",
+      "ecu": "Двигатель (ECM)",
+      "description": "Общий код SAE, система: Блок управления и выходные цепи. Нет в локальной базе — пришлите код, добавлю расшифровку.",
+      "system": "Блок управления и выходные цепи",
+      "severity": "medium",
+      "hint": ""
+    }
+  ],
+  "mil": false,
+  "mil_count": 0,
+  "lamps": {
+    "Check Engine (MIL)": false
+  }
+}

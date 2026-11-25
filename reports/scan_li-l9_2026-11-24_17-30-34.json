@@ -1,0 +1,26 @@
+{
+  "time": "2026-11-24T17:30:34.542215",
+  "vin": "LW433B121P1123890",
+  "vehicle": {
+    "vin": "",
+    "manufacturer": "Li Auto / Lixiang (Китай)",
+    "fuel": "гибрид",
+    "voltage": "12",
+    "protocol": "obd",
+    "id": "li-l9",
+    "make": "Li Auto",
+    "model": "Li L9",
+    "year": 2022,
+    "engine": "гибрид EREV: бензин 1.5 турбо (генератор); электромоторы, 4WD, 6 мест",
+    "notes": "Заготовка. Включить Ready. Читается двигатель-генератор по OBD-II; ВВБ/моторы — закрытые протоколы. Впишите VIN и год."
+  },
+  "protocol": "ISO 15765-4 CAN 11 бит 500 кбит/с",
+  "demo": false,
+  "mode": "obd",
+  "codes": [],
+  "mil": false,
+  "mil_count": 0,
+  "lamps": {
+    "Check Engine (MIL)": false
+  }
+}
